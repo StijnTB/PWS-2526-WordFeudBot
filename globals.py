@@ -15,7 +15,8 @@ class Globals:
         "DW":Color(191,120,32),
         "DL":Color(113,157,101),
         "Base":Color(44,47,54),
-        "Letter":Color(209,210,205)
+        "Letter":Color(209,210,205),
+        "  ":Color(97,72,99)
     }
 screen = pygame.display.set_mode((Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT))
 pygame.display.set_caption("WordFeud")

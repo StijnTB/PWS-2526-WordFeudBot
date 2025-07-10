@@ -13,7 +13,7 @@ board_types = [
     ["TW",None,None,None,"DW",None,"DL",None,"DL",None,"DW",None,None,None,"TW"],
     [None,"TL",None,None,None,"TL",None,None,None,"TL",None,None,None,"TL",None],
     [None,None,"DL",None,"DL",None,None,None,None,None,"DL",None,"DL",None,None],
-    ["DL",None,None,"DW",None,None,None,None,None,None,None,"DW",None,None,"DL"],
+    ["DL",None,None,"DW",None,None,None,"  ",None,None,None,"DW",None,None,"DL"],
     [None,None,"DL",None,"DL",None,None,None,None,None,"DL",None,"DL",None,None],
     [None,"TL",None,None,None,"TL",None,None,None,"TL",None,None,None,"TL",None],
     ["TW",None,None,None,"DW",None,"DL",None,"DL",None,"DW",None,None,None,"TW"],

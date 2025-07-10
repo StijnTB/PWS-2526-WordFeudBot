@@ -30,7 +30,7 @@ class BaseTile():
             self._tile_color, 
             self._base_tile_shape,
             0,
-            int(self._tile_size/10)
+            int(self._tile_size/4)
         )
         self._pygame_font: pygame.font.Font = pygame.font.Font("GothamBlack.ttf",Globals.TEXT_SIZE_TILE)
         self._letter_image: pygame.surface.Surface = self._pygame_font.render(self._letter, True, "Black")
@@ -41,7 +41,6 @@ class BaseTile():
             text_width += letter_width
             if letter_height > highest_letter_height: highest_letter_height = letter_height
         self._text_dimensions: tuple = (text_width, highest_letter_height)
-        print(f"text:{self._letter} with dimensions {self._text_dimensions}")
         self._text_coordinates: tuple = (
             self._x-floor(text_width/2),
             self._y-floor(highest_letter_height/2)
@@ -58,7 +57,7 @@ class BaseTile():
                 self._tile_color,
                 self._base_tile_shape,
                 0,
-                int(self._tile_size/10)
+                int(self._tile_size/4)
             )
             self._pygame_font = pygame.font.Font("GothamBlack.ttf",Globals.TEXT_SIZE_TILE)
             self._letter_image = self._pygame_font.render(self.letter, True, "Black")
@@ -105,7 +104,7 @@ class BoardTile(BaseTile):
                 self._tile_color,
                 self._base_tile_shape,
                 0,
-                int(self._tile_size/10)
+                int(self._tile_size/4)
             )
             self._pygame_font = pygame.font.Font("GothamBlack.ttf",Globals.TEXT_SIZE_TILE)
             self._letter_image = self._pygame_font.render(self._letter, True, "Black")
