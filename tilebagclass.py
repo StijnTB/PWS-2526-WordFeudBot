@@ -9,13 +9,12 @@ class TileBag:
         self._bag_list: list = []
         self.fill_bag()
 
-    def fill_bag(self):
-
+    def fill_bag(self) -> None:
         for letter in self._tile_bag_dict:
             for i in range(0, self._tile_bag_dict[letter]["amount"]):
                 self._bag_list.append(letter)
 
-    def grab_letters(self, amount_of_letters: int) -> list:
+    def grab_letters(self, amount_of_letters: int) -> list[str]:
         grabbed_letter_list = []
         random.shuffle(self._bag_list)
         while amount_of_letters > 0:
@@ -25,10 +24,11 @@ class TileBag:
             amount_of_letters -= 1
         return grabbed_letter_list
 
-    def swap_letters(self, returned_letters: list) -> list:
-        grabbed_letters: list = returned_letters
-        if len(self._bag_list) >= 7:
-            amount_of_letters: int = len(returned_letters)
-            grabbed_letters = self.grab_letters(amount_of_letters)
-            self._bag_list.extend(returned_letters)
+    def swap_letters(self, returned_letters: list) -> list[str]:
+        amount_of_letters: int = len(returned_letters)
+        grabbed_letters: list[str] = self.grab_letters(amount_of_letters)
+        self._bag_list.extend(returned_letters)
         return grabbed_letters
+
+    def get_amount_of_letters_remaining(self) -> int:
+        return len(self._bag_list)

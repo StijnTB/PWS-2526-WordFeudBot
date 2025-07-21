@@ -58,6 +58,3 @@ class TRIE:
                 return False
             node = node.children[letter]
         return node.is_word
-
-    def get_root(self):
-        return self.root.children

@@ -2,6 +2,7 @@ import pygame
 from pygame import Rect, Color
 from globals import Globals, screen
 from utils import *
+from random import randint
 
 pygame.init()
 
@@ -17,6 +18,7 @@ class BaseTile:
     ) -> None:
         self._tile_size: int = tile_size
         self._letter: str = letter
+        self._tile_value: int
         self._tile_type = tile_type
         self._x: int = x
         self._y: int = y
@@ -34,38 +36,43 @@ class BaseTile:
             0,
             int(self._tile_size / 4),
         )
-        self._should_recompute: bool = True
+        self._is_attempt_blank: bool = False
+        # Globals.global_should_recompute = True
         self.update()
 
     def update(self) -> None:
-        if self._should_recompute:
-            self.decide_tile_color()
-            self._background_rect = pygame.draw.rect(
-                pygame.display.get_surface(),
-                self._tile_color,
-                self._base_tile_shape,
-                0,
-                int(self._tile_size / 4),
+        self.decide_tile_color()
+        self._background_rect = pygame.draw.rect(
+            pygame.display.get_surface(),
+            self._tile_color,
+            self._base_tile_shape,
+            0,
+            int(self._tile_size / 4),
+        )
+        self.recalculate_letters()
+        screen.blit(self._letter_image, self._text_coordinates)
+        self._pygame_font = pygame.font.Font("GothamBlack.ttf", Globals.TEXT_SIZE_TILE)
+        self._letter_image = self._pygame_font.render(self.letter, True, "Black")
+        screen.blit(self._letter_image, self._text_coordinates)
+        if self.tile_type in (
+            "Try_board/Selected_tilerow",
+            "Set_board/Base_tilerow",
+            "Played_tilerow_letter",
+        ):
+            self._letter_value_pygame_font = pygame.font.Font(
+                "GothamBlack.ttf", ceil(Globals.TEXT_SIZE_TILE / 2)
             )
-            self.recalculate_letters()
-            screen.blit(self._letter_image, self._text_coordinates)
-            self._pygame_font = pygame.font.Font(
-                "GothamBlack.ttf", Globals.TEXT_SIZE_TILE
-            )
-            self._letter_image = self._pygame_font.render(self._letter, True, "Black")
-            screen.blit(self._letter_image, self._text_coordinates)
-            if self.tile_type in (
-                "Try_board/Selected_tilerow",
-                "Set_board/Base_tilerow",
-                "Played_tilerow_letter",
-            ):
-                self._letter_value_pygame_font = pygame.font.Font(
-                    "GothamBlack.ttf", ceil(Globals.TEXT_SIZE_TILE / 2)
-                )
+            if not self._is_attempt_blank:
+                self._tile_value = Globals.TILE_LETTER_DICT[self._letter]["value"]
                 self._tile_value_image = self._letter_value_pygame_font.render(
                     str(Globals.TILE_LETTER_DICT[self._letter]["value"]), True, "Black"
                 )
-                screen.blit(self._tile_value_image, (self._x + 7, self._y + 7))
+            else:
+                self._tile_value = 0
+                self._tile_value_image = self._letter_value_pygame_font.render(
+                    "0", True, "Black"
+                )
+            screen.blit(self._tile_value_image, (self._x + 7, self._y + 7))
 
     def recalculate_letters(self):
         self._pygame_font: pygame.font.Font = pygame.font.Font(
@@ -95,10 +102,11 @@ class BaseTile:
 
     @letter.setter
     def letter(self, new_letter: str) -> None:
+        if new_letter == " ":
+            new_letter = list(Globals.TILE_LETTER_DICT.keys())[randint(0, 25)]
+            self._is_attempt_blank = True
         self._letter = new_letter
-        # if self._letter == "None":
-        #    self.tile_type = "Tilerow_empty"
-        self._should_recompute = True
+        # Globals.global_should_recompute = True
         self.update()
 
     @property
@@ -108,7 +116,7 @@ class BaseTile:
     @tile_type.setter
     def tile_type(self, new_tile_type: str) -> None:
         self._tile_type = new_tile_type
-        self._should_recompute = True
+        # Globals.global_should_recompute = True
         self.update()
 
 
@@ -132,13 +140,11 @@ class RowTile(BaseTile):
         super().__init__(
             self._tile_size, self._letter, self._tile_type, self._x, self._y
         )
-        self._should_recompute: bool = True
+        # Globals.global_should_recompute = True
         self.update()
 
     def update(self) -> None:
-        if self._should_recompute:
-            super().update()
-            self._should_recompute = False
+        super().update()
 
     @property
     def letter(self) -> str:
@@ -147,7 +153,7 @@ class RowTile(BaseTile):
     @letter.setter
     def letter(self, new_letter: str):
         self._letter = new_letter
-        self._should_recompute = True
+        # Globals.global_should_recompute = True
         self.update()
 
 
@@ -164,6 +170,9 @@ class BoardTile(BaseTile):
         self._letter: str = letter
         self._tile_type: str = tile_type
         self._board_coordinates: tuple = board_coords
+        self._is_attempt_blank: bool = (
+            False  # if true, the board tile is a try and contains a letter which is not su
+        )
         self._x: int = int(
             self._board_coordinates[1] * self._tile_size
             + self._tile_size / 2
@@ -179,27 +188,10 @@ class BoardTile(BaseTile):
             self._tile_size, self._letter, self._tile_type, self._x, self._y
         )
 
-        self._should_recompute: bool = True
         self.update()
 
     def update(self) -> None:
-        if self._should_recompute:
-            super().update()
-            self._should_recompute = False
-
-    @property
-    def letter(self) -> str:
-        """Get the letter assigned to the tile"""
-        return self._letter
-
-    @letter.setter
-    def letter(self, new_letter: str) -> None:
-        """Set the letter of the tile"""
-        if len(new_letter) == 1:
-            self._letter = new_letter
-            self.tile_type = "Set_board/Base_tilerow"
-            self._should_recompute = True
-            self.update()
+        super().update()
 
     @property
     def used(self) -> bool:
@@ -208,5 +200,4 @@ class BoardTile(BaseTile):
     @used.setter
     def used(self, new_used_state: bool) -> None:
         self._used = new_used_state
-        self._should_recompute = True
         self.update()

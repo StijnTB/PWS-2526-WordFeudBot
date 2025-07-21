@@ -6,30 +6,62 @@ import random
 
 class TileRow:
     def __init__(self, tilebag: TileBag):
-        self._tile_list: list = tilebag.grab_letters(7)
+        self._tilebag: TileBag = tilebag
+        self._tile_list: list[str] = tilebag.grab_letters(7)
 
 
 class PlayerTileRow(TileRow):
     def __init__(self, tilebag: TileBag):
         super().__init__(tilebag)
         self._tile_row_objects: list[RowTile] = []
-        self._tile_size = Globals.TILE_SIZE
+        self._tile_size: int = Globals.TILE_SIZE
         self._selected_tile_index: int = -1
         self._selected_letter: str = "None"
-        self._test_tile_list: list = self._tile_list
-
-        self._played_tile_list: list = (
+        self._played_tile_list: list[RowTile] = (
             []
         )  # contains the rowtile data of tiles played in this turn
-        self._board_set_tile_list: list = (
-            []
-        )  # contains the coordinates of tiles which are set in this turn
+        self._board_set_tile_list: list = [
+            tuple[int, int]
+        ]  # contains the coordinates of tiles which are set in this turn
         for index, tile_letter in enumerate(self._tile_list):
             self._tile_row_objects.append(RowTile(letter=tile_letter, row_coords=index))
+        Globals.global_should_recompute = True
+        self.update()
+
+    def swap_letters(self, list_of_swapped_indexes: list[int]):
+        print(self._tile_list)
+        letters_to_return: list[str] = []
+        for index in list_of_swapped_indexes:
+            letter = self._tile_list[index]
+            letters_to_return.append(letter)
+        for letter in letters_to_return:
+            self._tile_list.remove(letter)
+        if len(letters_to_return) > 0:
+            new_letters = self._tilebag.swap_letters(letters_to_return)
+            self._tile_list.extend(new_letters)
+            print(self._tile_list)
+            self.reload_tiles()
+
+    def reload_tiles(self) -> None:
+        for index in range(len(self._tile_list)):
+            tile_object: RowTile = self._tile_row_objects[index]
+            tile_object.letter = self._tile_list[index]
 
     def shuffle_row(self):
-        random.shuffle(self._tile_list)
+        shuffleable_row_list: list = self._tile_list.copy()
         tile_object: RowTile
+        unshufflable_index_list: list = []
+        for tile_object in self._played_tile_list:
+            shuffleable_row_list.remove(tile_object.letter)
+            unshufflable_index_list.append(tile_object._row_coordinate)
+        random.shuffle(shuffleable_row_list)
+        current_index_shuffled_list: int = 0
+        for index in range(len(self._tile_list)):
+            if index not in unshufflable_index_list:
+                self._tile_list[index] = shuffleable_row_list[
+                    current_index_shuffled_list
+                ]
+                current_index_shuffled_list += 1
         for index, tile_object in enumerate(self._tile_row_objects):
             tile_object.letter = self._tile_list[index]
 
@@ -79,23 +111,52 @@ class PlayerTileRow(TileRow):
         self.check_tile_selected(self.selected_tile_index)
         selected_tile.tile_type = "Played_tilerow_letter"
         self._selected_tile_index = -1
+        self.selected_letter = "None"
         self._played_tile_list.append(selected_tile)
         self._board_set_tile_list.append(clicked_board_tile_coordinates)
 
-    def return_clicked_tile(self, letter: str, uncheck: bool):
+    def return_full_tilerow(self):
+        for tile_object in self._played_tile_list:
+            tile_object.tile_type = "Set_board/Base_tilerow"
+        self._played_tile_list.clear()
+
+    def return_clicked_tile(
+        self,
+        letter: str,
+        uncheck: bool,
+        board_tile_coordinates: tuple[int, int],
+        tile_is_blank: bool,
+    ):
         if uncheck:
             self.check_tile_selected(self.selected_tile_index)
         index: int
         tile_object: RowTile
         for index in range(0, len(self._tile_row_objects)):
             tile_object = self._tile_row_objects[index]
+            if tile_is_blank:
+                letter = " "
             if (
                 tile_object.letter == letter
                 and tile_object.tile_type == "Played_tilerow_letter"
             ):
-                tile_object.tile_type = "Try_board/Selected_tilerow"
-                self.selected_tile_index = index
+                tile_object.tile_type = "Set_board/Base_tilerow"
+                self.selected_tile_index = -1
+                self.selected_letter = "None"
+                self._played_tile_list.remove(tile_object)
+                self._board_set_tile_list.remove(board_tile_coordinates)
                 break
+
+    def get_new_letters(self):
+        for tile in self._played_tile_list:
+            tile.letter = self._tilebag.grab_letters(1)[0]
+            tile.tile_type = "Set_board/Base_tilerow"
+            self._tile_list[tile._row_coordinate] = tile.letter
+        self._board_set_tile_list.clear()
+        self._played_tile_list.clear()
+
+    def update(self) -> None:
+        for tile in self._tile_row_objects:
+            tile.update()
 
     @property
     def selected_tile_index(self) -> int:
@@ -104,6 +165,7 @@ class PlayerTileRow(TileRow):
     @selected_tile_index.setter
     def selected_tile_index(self, new_tile_index: int):
         self._selected_tile_index = new_tile_index
+        # Globals.global_should_recompute = True
 
     @property
     def selected_letter(self) -> str:
@@ -112,6 +174,7 @@ class PlayerTileRow(TileRow):
     @selected_letter.setter
     def selected_letter(self, new_letter: str):
         self._selected_letter = new_letter
+        # Globals.global_should_recompute = True
 
 
 class BotTileRow(TileRow):

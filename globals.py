@@ -5,14 +5,13 @@ from utils import *
 
 pygame.init()
 class Globals:
-    SCREEN_WIDTH: int = 600
-    SCREEN_HEIGHT: int = 800
     TILE_SIZE: int = 40 #tile size should be divisible by 2 and 10
-    BUTTON_SIZE: tuple[int,int] = (60,40)
+    BUTTON_SIZE: tuple[int,int] = (148,TILE_SIZE)
     _border_between_tiles_width: int = 2
-    SCREEN_WIDTH = TILE_SIZE * 15 + 14 * _border_between_tiles_width
-    TEXT_SIZE_TILE: int = int(TILE_SIZE / 2)
-    _tile_type_list: list = ["TW","TL","DW","DL","MI","Board_letter_empty","Board_letter_set","Board_letter_try","Tilerow_letter_base","Tilerow_letter_selected","Tilerow_letter_empty"]
+    _offset_between_screen_categories: int = 10
+    SCREEN_WIDTH = TILE_SIZE * 15 + 14 * _border_between_tiles_width + _offset_between_screen_categories + BUTTON_SIZE[0]
+    SCREEN_HEIGHT = TILE_SIZE * 15 + 15 * _border_between_tiles_width + _offset_between_screen_categories + BUTTON_SIZE[1]
+    TEXT_SIZE_TILE: int = int(TILE_SIZE / 2) # is 20
     #board_letter_empty and tilerow_letter_empty zijn zelfde / board_letter_set en tilerow_letter_base zijn zelfde / board_letter_try en tilerow_letter_selected zijn zelfde
     TILE_COLOR_DICT: dict = {
         "TW":Color(122,57,57),
@@ -20,21 +19,13 @@ class Globals:
         "DW":Color(191,120,32),
         "DL":Color(113,157,101),
         "MI":Color(97,72,99),
-        "Empty_tile":Color(44,47,54),
-        "Played_tilerow_letter":Color(44,47,54),
-        "Set_board/Base_tilerow":Color(209,210,205),
-        "Try_board/Selected_tilerow":Color(255,255,255),
-        "Letter":Color(209,210,205),
-        "Highlighted":Color(255,255,255),
-        "Tilerow_letter_base":Color(209,210,205),
-        "Tilerow_letter_highlighted":Color(255,255,255),
-        "Tilerow_empty":Color(44,47,54)
+        "Empty_tile":Color(44,47,54), #grey
+        "Played_tilerow_letter":Color(44,47,54), #grey, same as empty_tile
+        "Set_board/Base_tilerow":Color(209,210,205), #greyish white
+        "Try_board/Selected_tilerow":Color(255,255,255), #white
     }
-    SCREEN_TILES_STARTING_HEIGHT: int = 40
-    _offset_board_tilerow: int = 50
-    ROW_TILES_SCREEN_HEIGHT: int = SCREEN_TILES_STARTING_HEIGHT + TILE_SIZE * 15 + 15 * _border_between_tiles_width + int(TILE_SIZE/2) + _offset_board_tilerow #the center y-coordinate on the screen of the players row of tiles
-
-    BOARD_LAYOUT_LIST: list = [
+    global_should_recompute: bool = True
+    BOARD_LAYOUT_LIST: list[list] = [
         ["TL",None,None,None,"TW",None,None,"DL",None,None,"TW",None,None,None,"TL"],
         [None,"DL",None,None,None,"TL",None,None,None,"TL",None,None,None,"DL",None],
         [None,None,"DW",None,None,None,"DL",None,"DL",None,None,None,"DW",None,None],
@@ -81,6 +72,10 @@ class Globals:
         "Z":{"amount":2,"value":5},
         " ":{"amount":2,"value":0},
     }
+    SCREEN_TILES_STARTING_HEIGHT: int = _offset_between_screen_categories * 0
+    ROW_TILES_SCREEN_HEIGHT: int = SCREEN_TILES_STARTING_HEIGHT + TILE_SIZE * 15 + 15 * _border_between_tiles_width + int(TILE_SIZE/2) + _offset_between_screen_categories #the center y-coordinate on the screen of the players row of tiles
+
+    
 game_display = pygame.display
 screen = pygame.display.set_mode((Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT))
 pygame.display.set_caption("WordFeud")
