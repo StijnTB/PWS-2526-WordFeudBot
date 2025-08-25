@@ -9,12 +9,7 @@ from tilerowclass import PlayerTileRow
 
 
 class Player:
-    def __init__(
-        self,
-        tilebag: TileBag,
-        board: Board,
-        sidebar: SideBar
-    ):
+    def __init__(self, tilebag: TileBag, board: Board, sidebar: SideBar):
         self._game_board: Board = board
         self._tilebag: TileBag = tilebag
         self._sidebar: SideBar = sidebar
@@ -105,7 +100,7 @@ class Player:
                                                 clicked_board_tile.letter,
                                                 True,
                                                 clicked_tile_coordinates,
-                                                is_attempted_blank
+                                                is_attempted_blank,
                                             )
                                             self._game_board.reset_tile(
                                                 clicked_tile_coordinates
@@ -216,7 +211,7 @@ class Player:
                                 self._turn_state = "Base"
 
                     pygame.display.flip()  # Update display
-            
+
     def update(self) -> None:
         if (
             Globals.global_should_recompute

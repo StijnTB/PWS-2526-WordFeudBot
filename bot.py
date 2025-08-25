@@ -7,12 +7,7 @@ from sidebar import SideBar
 
 
 class Bot:
-    def __init__(
-        self,
-        tilebag: TileBag,
-        board: Board,
-        sidebar: SideBar
-    ):
+    def __init__(self, tilebag: TileBag, board: Board, sidebar: SideBar):
         self._game_board = board
         self._tilebag = tilebag
         self._tilerow: BotTileRow = BotTileRow(self._tilebag)

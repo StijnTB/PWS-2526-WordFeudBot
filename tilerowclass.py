@@ -15,6 +15,8 @@ class TileRow:
             if letter != "":
                 remaining_points += Globals.TILE_LETTER_DICT[letter]["value"]
         return remaining_points
+
+
 class PlayerTileRow(TileRow):
     def __init__(self, tilebag: TileBag):
         super().__init__(tilebag)
@@ -22,8 +24,12 @@ class PlayerTileRow(TileRow):
         self._tile_size: int = Globals.TILE_SIZE
         self._selected_tile_index: int = -1
         self._selected_letter: str = "None"
-        self._played_tile_list: list[RowTile] = [] # contains the rowtile data of tiles played in this turn
-        self._board_set_tile_list: list[tuple[int, int]] = []  # contains the coordinates of tiles which are set in this turn
+        self._played_tile_list: list[RowTile] = (
+            []
+        )  # contains the rowtile data of tiles played in this turn
+        self._board_set_tile_list: list[tuple[int, int]] = (
+            []
+        )  # contains the coordinates of tiles which are set in this turn
         for index, tile_letter in enumerate(self._tile_list):
             self._tile_row_objects.append(RowTile(letter=tile_letter, row_coords=index))
         Globals.global_should_recompute = True
@@ -153,7 +159,7 @@ class PlayerTileRow(TileRow):
                 tile.letter = self._tilebag.grab_letters(1)[0]
                 tile.tile_type = "Set_board/Base_tilerow"
                 self._tile_list[tile._row_coordinate] = tile.letter
-        else: #less than the played amount of tiles are in the bag
+        else:  # less than the played amount of tiles are in the bag
             for tile in self._played_tile_list:
                 if len(self._tilebag._bag_list) >= 1:
                     tile.letter = self._tilebag.grab_letters(1)[0]
@@ -165,7 +171,6 @@ class PlayerTileRow(TileRow):
                     self._tile_list[tile._row_coordinate] = tile.letter
         self._board_set_tile_list.clear()
         self._played_tile_list.clear()
-        
 
     def update(self) -> None:
         for tile in self._tile_row_objects:
@@ -193,3 +198,19 @@ class PlayerTileRow(TileRow):
 class BotTileRow(TileRow):
     def __init__(self, tilebag: TileBag):
         super().__init__(tilebag)
+        self._max_grabbable_amount_from_tilebag: int = 7
+
+    def get_new_letters(self, letters_to_replace: list[str]) -> None:
+        for letter in letters_to_replace:
+            self._tile_list.remove(letter)
+        print(
+            len(self._tilebag._bag_list), len(letters_to_replace), len(self._tile_list)
+        )
+        if len(self._tilebag._bag_list) == 0:
+            pass
+        elif len(self._tilebag._bag_list) >= len(letters_to_replace):
+            self._tile_list.extend(self._tilebag.grab_letters(len(letters_to_replace)))
+        elif len(self._tilebag._bag_list) < len(letters_to_replace):
+            self._tile_list.extend(
+                self._tilebag.grab_letters(len(self._tilebag._bag_list))
+            )
