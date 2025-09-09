@@ -8,15 +8,29 @@ from player import Player
 from bot import Bot
 from globals import Globals, screen
 import random
-from nltk.corpus import alpino
+
 
 word_trie: TRIE = TRIE()
 
+<<<<<<< Updated upstream
 line: str
 longest_word_length = 0
 longest_word = ""
 for line in alpino.words():  # type: ignore
     word = line.upper()
+=======
+wordlist_file = open(r'wordlist.txt', 'r', encoding='utf-8')
+
+for line in wordlist_file:
+    word = line.strip()
+    wordlist.append(word)
+
+
+
+
+# voeg woorden toe
+for word in wordlist:
+>>>>>>> Stashed changes
     word_trie.insert(word)
 
 pygame.init()

@@ -160,6 +160,7 @@ class Board:
         letter_values: list[int] = []
         double_word_counter: int = 0
         triple_word_counter: int = 0
+<<<<<<< Updated upstream
         if isinstance(known_tile_coordinate, tuple):
             tile_object: BoardTile = self.game_board[str(known_tile_coordinate[0])][
                 str(known_tile_coordinate[1])
@@ -236,6 +237,92 @@ class Board:
             )
             return ("".join(word_formed_letters), word_value)
         return ("", 0)
+=======
+
+        tile_object: BoardTile = self.game_board[str(known_tile_coordinate[0])][
+            str(known_tile_coordinate[1])
+        ]["tile_object"]
+        word_formed_letters.append(tile_object.letter)
+        original_tile_type = Globals.BOARD_LAYOUT_LIST[
+            tile_object._board_coordinates[0]
+        ][tile_object._board_coordinates[1]]
+        letter_value_multiplier: int = 1
+        if original_tile_type == "TL":
+            letter_value_multiplier = 3
+        elif original_tile_type == "DL":
+            letter_value_multiplier = 2
+        elif original_tile_type == "TW":
+            double_word_counter += 1
+        elif original_tile_type == "DW":
+            triple_word_counter += 1
+        letter_values.append(tile_object._tile_value * letter_value_multiplier)
+        while tile_object.letter not in ["", "TW", "TL", "DW", "DL"]:
+            if (
+                tile_object._board_coordinates[0] - direction[0] < 0
+                or tile_object._board_coordinates[1] - direction[1] < 0
+            ):
+                break
+            tile_object = self.game_board[
+                str(tile_object._board_coordinates[0] - direction[0])
+            ][str(tile_object._board_coordinates[1] - direction[1])]["tile_object"]
+            if len(tile_object.letter) == 1:
+                word_formed_letters.insert(0, tile_object.letter)
+                letter_value_multiplier = 1
+                if (
+                    tile_object._board_coordinates in complete_tile_list
+                ):  # only get multipliers etc. when tile is laid in this turn
+                    original_tile_type = Globals.BOARD_LAYOUT_LIST[
+                        tile_object._board_coordinates[0]
+                    ][tile_object._board_coordinates[1]]
+                    if original_tile_type == "TL":
+                        letter_value_multiplier = 3
+                    elif original_tile_type == "DL":
+                        letter_value_multiplier = 2
+                    elif original_tile_type == "TW":
+                        triple_word_counter += 1
+                    elif original_tile_type == "DW":
+                        double_word_counter += 1
+                letter_values.insert(
+                    0, tile_object._tile_value * letter_value_multiplier
+                )
+        tile_object = self.game_board[str(known_tile_coordinate[0])][
+            str(known_tile_coordinate[1])
+        ]["tile_object"]
+        while tile_object.letter not in ["", "TW", "TL", "DW", "DL"]:
+            if (
+                tile_object._board_coordinates[0] + direction[0] > 14
+                or tile_object._board_coordinates[1] + direction[1] > 14
+            ):
+                break
+            tile_object = self.game_board[
+                str(tile_object._board_coordinates[0] + direction[0])
+            ][str(tile_object._board_coordinates[1] + direction[1])]["tile_object"]
+            if len(tile_object.letter) == 1:
+                letter_value_multiplier = 1
+                word_formed_letters.append(tile_object.letter)
+                if tile_object._board_coordinates in complete_tile_list:
+                    original_tile_type = Globals.BOARD_LAYOUT_LIST[
+                        tile_object._board_coordinates[0]
+                    ][tile_object._board_coordinates[1]]
+                    if original_tile_type == "TL":
+                        letter_value_multiplier = 3
+                    elif original_tile_type == "DL":
+                        letter_value_multiplier = 2
+                    elif original_tile_type == "TW":
+                        triple_word_counter += 1
+                    elif original_tile_type == "DW":
+                        double_word_counter += 1
+                letter_values.append(tile_object._tile_value * letter_value_multiplier)
+        word_value: int = 0
+        #print(letter_values)
+        for value in letter_values:
+            word_value += value
+        #print(
+        #    f"original word value of word {''.join(word_formed_letters)} is {word_value}, multiplied value is {word_value * (2**double_word_counter) * (3**triple_word_counter)}"
+        #)
+        word_value = word_value * (2**double_word_counter) * (3**triple_word_counter)
+        return (''.join(word_formed_letters), word_value)
+>>>>>>> Stashed changes
 
     def finalize_set_tiles(self, tile_coordinates_list: list[tuple[int, int]]):
         tile_object: BoardTile
@@ -287,7 +374,6 @@ class Board:
         main_word, main_word_value = self.get_word_from_tile(
             first_tile_in_main_coordinates, word_direction, tile_coordinates_list
         )
-        print(main_word_value)
         if len(main_word) > 1:
             words_created_set.add(main_word)
             total_value += main_word_value
@@ -307,10 +393,34 @@ class Board:
             ):  # word was not found in word list
                 print(f"submitted word '{word_created}' was not found in the word list")
                 return (False, 0)
+<<<<<<< Updated upstream
+=======
+        #print(tile_coordinates_list)
+>>>>>>> Stashed changes
         if len(tile_coordinates_list) == 7:
             total_value += 40  # 7 tiles laid on board, so add 40 points
         self.finalize_set_tiles(tile_coordinates_list)
         self._is_first_turn = False
         return (True, total_value)
 
+<<<<<<< Updated upstream
     # def get_word_value(self, tile_coordinate_list):
+=======
+    def bot_play_word(
+        self, tile_coordinates_list: list[tuple[int, int]], letters_list: list[str]
+    ):
+        if len(tile_coordinates_list) == len(letters_list):
+            for index in range(len(tile_coordinates_list)):
+                tile_coordinate: tuple[int, int] = tile_coordinates_list[index]
+                tile_letter: str = letters_list[index]
+                #print(f"tile coordinate {tile_coordinate}; tile letter {tile_letter}")
+                self.game_board[str(tile_coordinate[0])][str(tile_coordinate[1])][
+                    "letter"
+                ] = tile_letter
+                tile_object: BoardTile = self.game_board[str(tile_coordinate[0])][
+                    str(tile_coordinate[1])
+                ]["tile_object"]
+                tile_object.letter = tile_letter
+                tile_object.tile_type = "Set_board/Base_tilerow"
+                time.sleep(0.5)
+>>>>>>> Stashed changes

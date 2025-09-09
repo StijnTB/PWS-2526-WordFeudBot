@@ -58,3 +58,4 @@ class TRIE:
                 return False
             node = node.children[letter]
         return node.is_word
+
