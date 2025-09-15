@@ -1,5 +1,37 @@
 import pygame
 
+alphabet_list: list[str] = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+]
+alphabet_indexes: dict[str, int] = {}
+for index in range(0, 26):
+    alphabet_indexes[alphabet_list[index]] = index
+
 
 def floor(number: float) -> int:
     if round(number) - number > 0:

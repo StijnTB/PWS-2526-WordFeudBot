@@ -70,7 +70,7 @@ class Globals:
         "X":{"amount":1,"value":8},
         "Y":{"amount":1,"value":8},
         "Z":{"amount":2,"value":5},
-        #" ":{"amount":2,"value":0},
+        " ":{"amount":0,"value":0},
     }
     SCREEN_TILES_STARTING_HEIGHT: int = _offset_between_screen_categories * 0
     ROW_TILES_SCREEN_HEIGHT: int = SCREEN_TILES_STARTING_HEIGHT + TILE_SIZE * 15 + 15 * _border_between_tiles_width + int(TILE_SIZE/2) + _offset_between_screen_categories #the center y-coordinate on the screen of the players row of tiles

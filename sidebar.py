@@ -225,8 +225,11 @@ class Scores:
         return self._player_score
 
     @player_score.setter
-    def player_score(self, delta_score: int) -> None:
-        self._player_score += delta_score
+    def player_score(self, new_score: int) -> None:
+        if new_score > 0:
+            self._player_score = new_score
+        elif new_score <= 0:
+            self._player_score = 0
         self.update()
 
     @property
@@ -234,8 +237,11 @@ class Scores:
         return self._bot_score
 
     @bot_score.setter
-    def bot_score(self, delta_score: int) -> None:
-        self._bot_score += delta_score
+    def bot_score(self, new_score: int) -> None:
+        if new_score > 0:
+            self._bot_score = new_score
+        elif new_score <= 0:
+            self._bot_score = 0
         self.update()
 
 

@@ -54,9 +54,9 @@ class CompetitionBot(Bot):
                             attempt[3], attempt[1], attempt[2], (0, 1), attempt[0]
                         )
                         possible_moves_list.append(attempt_object)
-                        #print(f"Candidate: {word}, score={attempt[0]}, coords={attempt[2]}")
                         if attempt[0] > best_move_greedy.score:
                             best_move_greedy = attempt_object
+
         for column_index in range(0, 15):
             tiles_in_column: str = ""
             for row in self._board.game_board.values():
@@ -87,12 +87,11 @@ class CompetitionBot(Bot):
 
     def competition_bot_play(self):
         best_move = self.getGreedyMove()
-        print("Rack:", self._tilerow._tile_list)
-        print("Best move:", best_move.move_attempted_words, best_move.score)
         print(f"best move words: {best_move.move_attempted_words}")
         print(best_move.move_coordinates)
         print(best_move.move_attempted_letters)
         print(best_move.score)
+
         if best_move.score > 0:
             self._board.bot_play_word(
                 best_move.move_coordinates, best_move.move_attempted_letters
@@ -210,7 +209,21 @@ class CompetitionBot(Bot):
         attempted_word_as_state: str = ""
         tiles_before_word: int = 0
         #        print(f"starting tile {starting_coordinates}; word {word}; direction {direction}; array: {current_board_state}")
-        
+        if (
+            round(
+                (
+                    tile._board_coordinates[0] ** 2 * direction[0]
+                    + tile._board_coordinates[1] ** 2 * direction[1]
+                )
+                ** 0.5
+            )
+            != (
+                tile._board_coordinates[0] ** 2 * direction[0]
+                + tile._board_coordinates[1] ** 2 * direction[1]
+            )
+            ** 0.5
+        ):
+            return False
         for index in range(
             0,
             int(
@@ -226,7 +239,6 @@ class CompetitionBot(Bot):
         attempted_word_as_state += word
         for index in range(0, 15 - tiles_before_word - len(word)):
             attempted_word_as_state += "_"
-        print(f"attempted word: {attempted_word_as_state}, current_board_state: {current_board_state}")
         for index in range(0, 15):
             if current_board_state[index] == "_":
                 if (
@@ -240,13 +252,14 @@ class CompetitionBot(Bot):
                     word_attempt_letters.append(attempted_word_as_state[index])
                 # filling up previously empty tiles is allowed
             else:
-                if current_board_state[index] != "_" and current_board_state[index] != attempted_word_as_state[index]:
+                if current_board_state[index] != attempted_word_as_state[index]:
                     #                    print(f"{word} starting at {tile._board_coordinates} with direction {direction} replaces or reassigns previously occupied tiles")
                     return False  # replacing previously filled tiles with either other letters or empty is not allowed
 
         total_points: int = 0
         attempted_words: list[str] = []
         attempted_words.append(word)
+        
         first_tile_coordinates: tuple[int, int] = (14, 14)
         for index in range(0, len(word)):
             tile_object = self._board.game_board[
@@ -280,7 +293,7 @@ class CompetitionBot(Bot):
         )
         #print(main_word_value)
         if len(main_word) > 1:
-            attempted_words.append(main_word)
+            #attempted_words.append(main_word)
             total_points += main_word_value
         for tile in set_tiles_list:
             word_created, word_value = self._board.get_word_from_tile(
@@ -293,13 +306,10 @@ class CompetitionBot(Bot):
                     return False
                 attempted_words.append(word_created)
                 total_points += word_value
-                
         if len(set_tiles_list) == 7:
             total_points += 40  # add 40 for all tiles set
         self._board.reset_tiles(set_tiles_list)
         #print(f"attempted words: {attempted_words}")
-        if not word_attempt_tiles:
-            return False
         
         return (total_points, attempted_words, word_attempt_tiles, word_attempt_letters)
 
@@ -325,9 +335,7 @@ class CompetitionBot(Bot):
                     blanks,
                 ):
                     res.append(word)
-                    
             i += 1
-        print("Filter in:", letters_on_selected, "->", len(res), "woorden")
         return res
 
     def countFrequencyOfEachLetterType(self, string: str) -> list[int]:

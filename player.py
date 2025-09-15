@@ -9,14 +9,10 @@ from tilerowclass import PlayerTileRow
 
 
 class Player:
-    def __init__(
-        self,
-        tilebag: TileBag,
-        board: Board,
-    ):
+    def __init__(self, tilebag: TileBag, board: Board, sidebar: SideBar):
         self._game_board: Board = board
         self._tilebag: TileBag = tilebag
-        self._sidebar: SideBar = SideBar()
+        self._sidebar: SideBar = sidebar
         self._tilerow: PlayerTileRow = PlayerTileRow(self._tilebag)
         self._is_turn: bool = True
         self._turn_state: str = "Base"  # "Base" is placing tiles board, "Swap" is
@@ -37,7 +33,6 @@ class Player:
             self._sidebar.recalculate_button_highlights(mouse_coordinates)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
                     self._exit = True
                     break
                 else:
@@ -105,6 +100,7 @@ class Player:
                                                 clicked_board_tile.letter,
                                                 True,
                                                 clicked_tile_coordinates,
+                                                is_attempted_blank,
                                             )
                                             self._game_board.reset_tile(
                                                 clicked_tile_coordinates

@@ -1,4 +1,3 @@
-import pygame
 import random
 from globals import *
 
@@ -13,6 +12,14 @@ class TileBag:
         for letter in self._tile_bag_dict:
             for i in range(0, self._tile_bag_dict[letter]["amount"]):
                 self._bag_list.append(letter)
+        """self._bag_list.clear()
+        self._bag_list.extend(["E","N",
+                               "E","N",
+                               "E","N",
+                               "E","N",
+                               "E","N",
+                               "E","N",
+                               "E","N"])"""
 
     def grab_letters(self, amount_of_letters: int) -> list[str]:
         grabbed_letter_list = []

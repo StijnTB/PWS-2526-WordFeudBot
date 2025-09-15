@@ -2,7 +2,6 @@ import pygame
 from pygame import Rect, Color
 from globals import Globals, screen
 from utils import *
-from random import randint
 
 pygame.init()
 
@@ -18,7 +17,7 @@ class BaseTile:
     ) -> None:
         self._tile_size: int = tile_size
         self._letter: str = letter
-        self._tile_value: int
+        self._tile_value: int = 0
         self._tile_type = tile_type
         self._x: int = x
         self._y: int = y
@@ -103,8 +102,10 @@ class BaseTile:
     @letter.setter
     def letter(self, new_letter: str) -> None:
         if new_letter == " ":
-            new_letter = list(Globals.TILE_LETTER_DICT.keys())[randint(0, 25)]
-            self._is_attempt_blank = True
+            while new_letter not in alphabet_list:
+                supposed_letter = input("input a single letter you want the tile to be")
+                new_letter = supposed_letter.upper()
+                self._is_attempt_blank = True
         self._letter = new_letter
         # Globals.global_should_recompute = True
         self.update()
