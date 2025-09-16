@@ -9,6 +9,7 @@ class Globals:
     BUTTON_SIZE: tuple[int,int] = (148,TILE_SIZE)
     _border_between_tiles_width: int = 2
     _offset_between_screen_categories: int = 10
+    amount_of_passes: int = 0 #every time the player or the bot passes, increase by 1. after 3, stop game
     SCREEN_WIDTH = TILE_SIZE * 15 + 14 * _border_between_tiles_width + _offset_between_screen_categories + BUTTON_SIZE[0]
     SCREEN_HEIGHT = TILE_SIZE * 15 + 15 * _border_between_tiles_width + _offset_between_screen_categories + BUTTON_SIZE[1]
     TEXT_SIZE_TILE: int = int(TILE_SIZE / 2) # is 20

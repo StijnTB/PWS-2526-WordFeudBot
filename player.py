@@ -155,6 +155,7 @@ class Player:
                                                     1
                                                 ]
                                                 self._is_turn = False
+                                                Globals.amount_of_passes = 0
                                             else:
                                                 print("failure")
                                         case "SHUFFLE":
@@ -172,6 +173,7 @@ class Player:
                                             )
                                             self._tilerow._board_set_tile_list.clear()
                                             self._is_turn = False
+                                            Globals.amount_of_passes += 1
                                         case "SWAP LETTERS":
                                             if (
                                                 self._tilebag.get_amount_of_letters_remaining()

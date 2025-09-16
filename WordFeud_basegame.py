@@ -65,7 +65,11 @@ while running:
         turn = 0
     print(f"player tilerow: {player._tilerow._tile_list}")
     print(f"bot tilerow: {bot._tilerow._tile_list}")
-
+    if Globals.amount_of_passes == 3:
+        sidebar._score_object.player_score -= player._tilerow.get_remaining_points()
+        sidebar._score_object.bot_score -= bot._tilerow.get_remaining_points()
+        pygame.display.flip()
+        break
     if set(player._tilerow._tile_list) == {""}:
         sidebar._score_object.player_score += bot._tilerow.get_remaining_points()
         sidebar._score_object.bot_score -= bot._tilerow.get_remaining_points()

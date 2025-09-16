@@ -1,4 +1,5 @@
 from bot import Bot
+from globals import Globals
 from tilebagclass import TileBag
 from boardclass import Board
 from sidebar import SideBar
@@ -100,8 +101,10 @@ class CompetitionBot(Bot):
             )
             self._tilerow.get_new_letters(best_move.move_attempted_letters)
             self._sidebar._score_object.bot_score += best_move.score
+            Globals.amount_of_passes = 0
         else:
             print("no move found, bot passes")
+            Globals.amount_of_passes += 1
             pass  # bot passes; gets more options during further development for tactical bots
 
     def try_word_on_tile(

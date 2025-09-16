@@ -4,4 +4,4 @@ build
 nltk_data
 testfile.py
 competition_bot_cy.c
-competition_bot_cy.cp313-win-amd64-pyd
+competition_bot_cy.cp313-win_amd64.pyd
