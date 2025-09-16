@@ -184,7 +184,6 @@ class Player:
                                                 )
                                                 self._tilerow._board_set_tile_list.clear()
                                                 self._turn_state = "Swap"
-                                                self._is_turn = False
                                 else:
                                     pass
                         elif self._turn_state == "Swap":

@@ -25,6 +25,7 @@ class Globals:
         "Try_board/Selected_tilerow":Color(255,255,255), #white
     }
     global_should_recompute: bool = True
+
     BOARD_LAYOUT_LIST: list[list] = [
         ["TL",None,None,None,"TW",None,None,"DL",None,None,"TW",None,None,None,"TL"],
         [None,"DL",None,None,None,"TL",None,None,None,"TL",None,None,None,"DL",None],

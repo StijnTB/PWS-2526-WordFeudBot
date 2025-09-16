@@ -1,3 +1,5 @@
+import time
+start_time = time.time()
 import pygame
 from utils import alphabet_list
 from tileclass import *
@@ -9,12 +11,11 @@ from competition_bot import CompetitionBot
 from sidebar import SideBar
 from globals import Globals, screen
 import random
-from nltk.corpus import alpino
 
 word_trie: TRIE = TRIE()
 wordlist: list[str] = []
 
-for line in alpino.words():  # type: ignore
+"""for line in :  # type: ignore
     if not word_trie.search_word(line.upper()):
         unusable_line: bool = False
         for char in line:
@@ -24,9 +25,13 @@ for line in alpino.words():  # type: ignore
             unusable_line == True
         if not unusable_line:
             word = line.upper()
-            word_trie.insert(word)
-            wordlist.append(word)
+            word_trie.insert(word)"""
 
+with open("wordlist.txt", "r", encoding="utf-8") as wordlist_file:
+     wordlist: list[str] = wordlist_file.read().splitlines()
+     for index in range(len(wordlist)):
+        wordlist[index] = wordlist[index].upper()
+        word_trie.insert(wordlist[index].upper())
 pygame.init()
 
 screen.fill("Black")
@@ -44,6 +49,9 @@ turn = 0
 players_turn: bool = True
 running = True
 exit_phase: bool = True
+end_time = time.time()
+time_spent: float = end_time - start_time
+print(time_spent)
 while running:
     if turn == 0:
         player.play()

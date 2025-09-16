@@ -282,6 +282,7 @@ class SideBar:
                 <= mouse_coordinates[1]
                 <= button.vertical_range[1]
             ):  # mouse is in range, so button is selected
+                print(button.text)
                 return button
         return None
 

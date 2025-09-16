@@ -172,9 +172,9 @@ class Board:
         elif original_tile_type == "DL":
             letter_value_multiplier = 2
         elif original_tile_type == "TW":
-            double_word_counter += 1
-        elif original_tile_type == "DW":
             triple_word_counter += 1
+        elif original_tile_type == "DW":
+            double_word_counter += 1
         letter_values.append(tile_object._tile_value * letter_value_multiplier)
         while tile_object.letter not in ["", "TW", "TL", "DW", "DL"]:
             if (
@@ -234,12 +234,8 @@ class Board:
                         double_word_counter += 1
                 letter_values.append(tile_object._tile_value * letter_value_multiplier)
         word_value: int = 0
-        print(letter_values)
         for value in letter_values:
             word_value += value
-        print(
-            f"original word value of word {"".join(word_formed_letters)} is {word_value}, multiplied value is {word_value * (2**double_word_counter) * (3**triple_word_counter)}"
-        )
         word_value = word_value * (2**double_word_counter) * (3**triple_word_counter)
         return ("".join(word_formed_letters), word_value)
 
@@ -335,4 +331,3 @@ class Board:
                 ]["tile_object"]
                 tile_object.letter = tile_letter
                 tile_object.tile_type = "Set_board/Base_tilerow"
-                time.sleep(0.5)
