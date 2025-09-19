@@ -1,4 +1,5 @@
 import time
+
 start_time = time.time()
 import pygame
 from utils import alphabet_list
@@ -28,8 +29,8 @@ wordlist: list[str] = []
             word_trie.insert(word)"""
 
 with open("wordlist.txt", "r", encoding="utf-8") as wordlist_file:
-     wordlist: list[str] = wordlist_file.read().splitlines()
-     for index in range(len(wordlist)):
+    wordlist: list[str] = wordlist_file.read().splitlines()
+    for index in range(len(wordlist)):
         wordlist[index] = wordlist[index].upper()
         word_trie.insert(wordlist[index].upper())
 pygame.init()
@@ -45,8 +46,7 @@ bot = CompetitionBot(tilebag, game_board, sidebar, wordlist)
 Globals.global_should_recompute = True
 
 turn: int = random.randint(0, 1)
-turn = 0
-players_turn: bool = True
+turn = 1
 running = True
 exit_phase: bool = True
 end_time = time.time()

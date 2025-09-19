@@ -36,7 +36,6 @@ class PlayerTileRow(TileRow):
         self.update()
 
     def swap_letters(self, list_of_swapped_indexes: list[int]):
-        print(self._tile_list)
         letters_to_return: list[str] = []
         for index in list_of_swapped_indexes:
             letter = self._tile_list[index]
@@ -46,7 +45,6 @@ class PlayerTileRow(TileRow):
         if len(letters_to_return) > 0:
             new_letters = self._tilebag.swap_letters(letters_to_return)
             self._tile_list.extend(new_letters)
-            print(self._tile_list)
             self.reload_tiles()
 
     def reload_tiles(self) -> None:
@@ -198,19 +196,33 @@ class PlayerTileRow(TileRow):
 class BotTileRow(TileRow):
     def __init__(self, tilebag: TileBag):
         super().__init__(tilebag)
+        self._tile_list = [" ", "X", "Q", "U", "O", "T", "S"]
         self._max_grabbable_amount_from_tilebag: int = 7
 
     def get_new_letters(self, letters_to_replace: list[str]) -> None:
-        for letter in letters_to_replace:
-            self._tile_list.remove(letter)
-        print(
-            len(self._tilebag._bag_list), len(letters_to_replace), len(self._tile_list)
-        )
-        if len(self._tilebag._bag_list) == 0:
-            pass
-        elif len(self._tilebag._bag_list) >= len(letters_to_replace):
-            self._tile_list.extend(self._tilebag.grab_letters(len(letters_to_replace)))
-        elif len(self._tilebag._bag_list) < len(letters_to_replace):
-            self._tile_list.extend(
-                self._tilebag.grab_letters(len(self._tilebag._bag_list))
+        old_tile_list = self._tile_list.copy()
+        try:
+            for letter in letters_to_replace:
+                print(f"letter: {letter}; tile list: {self._tile_list}")
+                if letter in self._tile_list:
+                    self._tile_list.remove(letter)
+                else:
+                    if " " in self._tile_list:
+                        self._tile_list.remove(" ")
+                    else:
+                        raise ValueError()
+            if len(self._tilebag._bag_list) == 0:
+                pass
+            elif len(self._tilebag._bag_list) >= len(letters_to_replace):
+                self._tile_list.extend(
+                    self._tilebag.grab_letters(len(letters_to_replace))
+                )
+            elif len(self._tilebag._bag_list) < len(letters_to_replace):
+                self._tile_list.extend(
+                    self._tilebag.grab_letters(len(self._tilebag._bag_list))
+                )
+        except Exception as e:
+            print(e)
+            print(
+                f"letters to replace {letters_to_replace}; tile list {old_tile_list}; changed tile list {self._tile_list}"
             )

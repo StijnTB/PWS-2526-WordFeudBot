@@ -282,7 +282,6 @@ class SideBar:
                 <= mouse_coordinates[1]
                 <= button.vertical_range[1]
             ):  # mouse is in range, so button is selected
-                print(button.text)
                 return button
         return None
 
@@ -297,7 +296,6 @@ class SideBar:
             <= return_button.vertical_range[1]
         ):
             self.switch_number_button_visibility()
-            print("swap visibility")
             Globals.global_should_recompute = True
             return "Swap_state_back"
         else:
@@ -423,10 +421,6 @@ class ButtonSet:
             hidden=True,
         )
 
-        print(
-            self._run_swap_letters_button._dimensions,
-            self._run_swap_letters_button._coordinates[0] - left_x_coordinate,
-        )
         self._number_buttons_dict["SWAP"] = self._run_swap_letters_button
         self._button_list: list[BaseButton] = [
             self._play_word_button,

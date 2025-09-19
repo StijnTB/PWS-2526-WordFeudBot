@@ -193,7 +193,6 @@ class Player:
                                 mouse_coordinates
                             )
                             if return_value == "Swap_letters":
-                                print("swap letters")
                                 swappable_indexes = (
                                     self._sidebar._button_set.get_swappable_indexes()
                                 )
@@ -206,7 +205,6 @@ class Player:
 
                                 # run function to swap letters on tilerow
                             elif return_value == "Swap_state_back":
-                                print("go back")
                                 self._sidebar.switch_number_button_visibility()
                                 Globals.global_should_recompute = True
                                 self._turn_state = "Base"

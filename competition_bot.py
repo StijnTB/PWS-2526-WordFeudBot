@@ -37,67 +37,119 @@ class CompetitionBot(Bot):
         attempt_called: int = 0
         possible_moves_list: list[BotMoveObject] = []
         best_move_greedy: BotMoveObject = BotMoveObject([], [], [], (), 0)
-        for row in self._board.game_board.values():
-            tiles_in_row: str = ""
-            for tile in row.values():
-                tiles_in_row += (
-                    tile["tile_object"].letter
-                    if tile["tile_object"].letter not in empty_tile
-                    else ""
-                )
-            filtered_wordlist: list[str] = self.filter(tiles_in_row)
-            #print(f"filtered wordlist: {filtered_wordlist}")
-            for word in filtered_wordlist:
-                for tile in row.values():
-                    attempt_called += 1
-                    attempt = self.try_word_on_tile(word, tile["tile_object"], (0, 1))
-                    if attempt:
-                        print(f"attempt success: horizontal; score {attempt[0]}; letters {attempt[1]}; tiles {attempt[2]}; words {attempt[3]}")
-                        attempt_object = BotMoveObject(
-                            attempt[3], attempt[1], attempt[2], (0, 1), attempt[0]
+        for row in self._board.game_board:
+            skip_row: bool = True
+            if self._board._used_rows[int(row)]:
+                skip_row = False
+            if int(row) - 1 >= 0:
+                if self._board._used_rows[int(row) - 1]:
+                    skip_row = False
+            if int(row) + 1 <= 14:
+                if self._board._used_rows[int(row) + 1]:
+                    skip_row = False
+            if self._board._is_first_turn and int(row) == 7:
+                skip_row = False
+            if not skip_row:
+                tiles_in_row: str = ""
+                for tile in self._board.game_board[row].values():
+                    tiles_in_row += (
+                        tile["tile_object"].letter
+                        if tile["tile_object"].letter not in empty_tile
+                        else ""
+                    )
+                filtered_wordlist: list[str] = self.filter(tiles_in_row)
+                for word in filtered_wordlist:
+                    for tile in self._board.game_board[row].values():
+                        attempt_called += 1
+                        attempt = self.try_word_on_tile(
+                            word, tile["tile_object"], (0, 1)
                         )
-                        possible_moves_list.append(attempt_object)
-                        if attempt[0] > best_move_greedy.score:
-                            best_move_greedy = attempt_object
+                        if attempt:
+                            attempt_object = BotMoveObject(
+                                attempt[3], attempt[1], attempt[2], (0, 1), attempt[0]
+                            )
+                            print(
+                                f"attempt success horizontal: words {attempt[1]}; letters {attempt[3]}; score {attempt[0]}; coordinates {attempt[2]}"
+                            )
+                            possible_moves_list.append(attempt_object)
+                            if attempt[0] > best_move_greedy.score:
+                                best_move_greedy = attempt_object
 
         for column_index in range(0, 15):
-            tiles_in_column: str = ""
-            for row in self._board.game_board.values():
-                tiles_in_column += (
-                    row[str(column_index)]["letter"]
-                    if row[str(column_index)]["letter"]
-                    not in (None, "DW", "TW", "DL", "TL", "")
-                    else ""
-                )
-            filtered_wordlist: list[str] = self.filter(tiles_in_column)
-            column_list: list[BoardTile] = [
-                self._board.game_board[str(row_index)][str(column_index)]["tile_object"]
-                for row_index in range(0, 15)
-            ]
-            for word in filtered_wordlist:
-                for tile in column_list:
-                    attempt_called += 1
-                    attempt = self.try_word_on_tile(word, tile, (1, 0))
-                    if attempt:
-                        print(f"attempt success: vertical; score {attempt[0]}; words {attempt[1]}; tiles {attempt[2]}; letters {attempt[3]}")
-                        attempt_object = BotMoveObject(
-                            attempt[3], attempt[1], attempt[2], (1, 0), attempt[0]
-                        )
-                        possible_moves_list.append(attempt_object)
-                        if attempt[0] > best_move_greedy.score:
-                            best_move_greedy = attempt_object
+            skip_column: bool = True
+            if self._board._used_columns[column_index]:
+                skip_column = False
+            if column_index - 1 >= 0:
+                if self._board._used_columns[column_index]:
+                    skip_column = False
+            if column_index + 1 <= 14:
+                if self._board._used_columns[column_index]:
+                    skip_column = False
+            if self._board._is_first_turn and column_index == 7:
+                skip_column = False
+            if not skip_column:
+                tiles_in_column: str = ""
+                for row in self._board.game_board.values():
+                    tiles_in_column += (
+                        row[str(column_index)]["letter"]
+                        if row[str(column_index)]["letter"]
+                        not in (None, "DW", "TW", "DL", "TL", "")
+                        else ""
+                    )
+                filtered_wordlist: list[str] = self.filter(tiles_in_column)
+                column_list: list[BoardTile] = [
+                    self._board.game_board[str(row_index)][str(column_index)][
+                        "tile_object"
+                    ]
+                    for row_index in range(0, 15)
+                ]
+                for word in filtered_wordlist:
+                    for tile in column_list:
+                        attempt_called += 1
+                        attempt = self.try_word_on_tile(word, tile, (1, 0))
+                        if attempt:
+                            attempt_object = BotMoveObject(
+                                attempt[3], attempt[1], attempt[2], (1, 0), attempt[0]
+                            )
+                            print(
+                                f"attempt success vertical: words {attempt[1]}; letters {attempt[3]}; score {attempt[0]}; coordinates {attempt[2]}"
+                            )
+                            possible_moves_list.append(attempt_object)
+                            if attempt[0] > best_move_greedy.score:
+                                best_move_greedy = attempt_object
 
         return best_move_greedy
 
     def competition_bot_play(self):
         best_move = self.getGreedyMove()
-        print(f"best move words: {best_move.move_attempted_words}")
-        print(best_move.move_coordinates)
-        print(best_move.move_attempted_letters)
-
-        if best_move.score > 0:
+        print(
+            f"best move\nwords: {best_move.move_attempted_words};\nscore: {best_move.score};\nletters: {best_move.move_attempted_letters};\ncoordinates {best_move.move_coordinates}"
+        )
+        current_tilerow: list[str] = self._tilerow._tile_list
+        played_tiles: list[str] = best_move.move_attempted_letters
+        letters_to_coordinates: list[tuple[str, tuple[int, int]]] = []
+        for index in range(len(played_tiles)):
+            letters_to_coordinates.append(
+                (played_tiles[index], best_move.move_coordinates[index])
+            )
+        cross_off_tilerow: list[str] = current_tilerow.copy()
+        move_failed: bool = False
+        blanks_coordinates: list[tuple[int, int]] = []
+        for tile in letters_to_coordinates:
+            if tile[0] in cross_off_tilerow:
+                cross_off_tilerow.remove(tile[0])
+            else:
+                if " " in cross_off_tilerow:
+                    cross_off_tilerow.remove(" ")
+                    blanks_coordinates.append(tile[1])
+                else:
+                    print("move failed: more blanks used than possible with tilerow")
+                    move_failed = True
+        if not move_failed and best_move.score > 0:
             self._board.bot_play_word(
-                best_move.move_coordinates, best_move.move_attempted_letters
+                best_move.move_coordinates,
+                best_move.move_attempted_letters,
+                blanks_coordinates,
             )
             self._tilerow.get_new_letters(best_move.move_attempted_letters)
             self._sidebar._score_object.bot_score += best_move.score
@@ -126,7 +178,7 @@ class CompetitionBot(Bot):
                 tile._board_coordinates[0] + direction[0] * index,
                 tile._board_coordinates[1] + direction[1] * index,
             )
-            if check_tile_coordinate == (7,7):
+            if check_tile_coordinate == (7, 7):
                 lies_on_no_letters = False
             if (
                 self._board.game_board[str(check_tile_coordinate[0])][
@@ -293,16 +345,27 @@ class CompetitionBot(Bot):
                 and tile_coordinates[1] <= first_tile_coordinates[1]
             ):
                 first_tile_coordinates = tile_coordinates
-
+        cross_off_tilerow = self._tilerow._tile_list.copy()
+        blank_coordinate_indexes: list[int] = []
+        for index, letter in enumerate(word_attempt_letters):
+            if letter in cross_off_tilerow:
+                cross_off_tilerow.remove(letter)
+            else:
+                if " " in cross_off_tilerow:
+                    cross_off_tilerow.remove(" ")
+                    blank_coordinate_indexes.append(index)
+        blank_coordinates: list[tuple[int, int]] = [
+            word_attempt_tiles[index] for index in blank_coordinate_indexes
+        ]
         main_word, main_word_value = self._board.get_word_from_tile(
-            first_tile_coordinates, direction, set_tiles_list
+            first_tile_coordinates, direction, set_tiles_list, blank_coordinates
         )
         if len(main_word) > 1:
             attempted_words.append(main_word)
             total_points += main_word_value
         for tile in set_tiles_list:
             word_created, word_value = self._board.get_word_from_tile(
-                tile, opposite_direction, set_tiles_list
+                tile, opposite_direction, set_tiles_list, blank_coordinates
             )
             if len(word_created) > 1:
                 if not self._board._word_tree.search_word(word_created):
