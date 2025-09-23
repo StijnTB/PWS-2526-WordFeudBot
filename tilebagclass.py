@@ -1,6 +1,6 @@
 import random
 from globals import *
-
+random.seed(Globals.random_seed)
 
 class TileBag:
     def __init__(self) -> None:

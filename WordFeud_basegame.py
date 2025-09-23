@@ -12,21 +12,9 @@ from competition_bot import CompetitionBot
 from sidebar import SideBar
 from globals import Globals, screen
 import random
-
+random.seed(Globals.random_seed)
 word_trie: TRIE = TRIE()
 wordlist: list[str] = []
-
-"""for line in :  # type: ignore
-    if not word_trie.search_word(line.upper()):
-        unusable_line: bool = False
-        for char in line:
-            if char not in alphabet_list:
-                unusable_line = True
-        if len(line) < 2:
-            unusable_line == True
-        if not unusable_line:
-            word = line.upper()
-            word_trie.insert(word)"""
 
 with open("wordlist.txt", "r", encoding="utf-8") as wordlist_file:
     wordlist: list[str] = wordlist_file.read().splitlines()
@@ -40,8 +28,8 @@ screen.fill("Black")
 game_board = Board(Globals.BOARD_LAYOUT_LIST, word_trie)
 tilebag = TileBag()
 sidebar = SideBar()
-player = Player(tilebag, game_board, sidebar)
-bot = CompetitionBot(tilebag, game_board, sidebar, wordlist)
+player = CompetitionBot(tilebag, game_board, sidebar, wordlist, 2)
+bot = CompetitionBot(tilebag, game_board, sidebar, wordlist, 1)
 
 Globals.global_should_recompute = True
 
@@ -51,18 +39,17 @@ running = True
 exit_phase: bool = True
 end_time = time.time()
 time_spent: float = end_time - start_time
+amount_of_turns: int = 0
 print(time_spent)
 while running:
     if turn == 0:
-        player.play()
-        if player._exit:
-            running = False
-            exit_phase = False  # skip exit phase
-            break
+        player.competition_bot_play()
         turn = 1
     elif turn == 1:
         bot.competition_bot_play()
         turn = 0
+    amount_of_turns += 1
+    print(amount_of_turns)
     print(f"player tilerow: {player._tilerow._tile_list}")
     print(f"bot tilerow: {bot._tilerow._tile_list}")
     if Globals.amount_of_passes == 3:
@@ -80,6 +67,9 @@ while running:
         sidebar._score_object.player_score -= player._tilerow.get_remaining_points()
         pygame.display.flip()
         break
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
 
 print("entering exit phase")
 while exit_phase:

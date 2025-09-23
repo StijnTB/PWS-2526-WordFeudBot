@@ -14,6 +14,7 @@ class Globals:
     amount_of_passes: int = (
         0  # every time the player or the bot passes, increase by 1. after 3, stop game
     )
+    random_seed: int = 1 #the seed to use for every random generator to improve bugfixing
     SCREEN_WIDTH = (
         TILE_SIZE * 15
         + 14 * _border_between_tiles_width

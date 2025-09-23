@@ -2,7 +2,7 @@ from tileclass import *
 from tilebagclass import TileBag
 from globals import *
 import random
-
+random.seed(Globals.random_seed)
 
 class TileRow:
     def __init__(self, tilebag: TileBag):
