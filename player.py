@@ -155,6 +155,7 @@ class Player:
                                                     1
                                                 ]
                                                 self._is_turn = False
+                                                Globals.amount_of_passes = 0
                                             else:
                                                 print("failure")
                                         case "SHUFFLE":
@@ -172,6 +173,7 @@ class Player:
                                             )
                                             self._tilerow._board_set_tile_list.clear()
                                             self._is_turn = False
+                                            Globals.amount_of_passes += 1
                                         case "SWAP LETTERS":
                                             if (
                                                 self._tilebag.get_amount_of_letters_remaining()
@@ -184,7 +186,6 @@ class Player:
                                                 )
                                                 self._tilerow._board_set_tile_list.clear()
                                                 self._turn_state = "Swap"
-                                                self._is_turn = False
                                 else:
                                     pass
                         elif self._turn_state == "Swap":
@@ -192,7 +193,6 @@ class Player:
                                 mouse_coordinates
                             )
                             if return_value == "Swap_letters":
-                                print("swap letters")
                                 swappable_indexes = (
                                     self._sidebar._button_set.get_swappable_indexes()
                                 )
@@ -205,7 +205,6 @@ class Player:
 
                                 # run function to swap letters on tilerow
                             elif return_value == "Swap_state_back":
-                                print("go back")
                                 self._sidebar.switch_number_button_visibility()
                                 Globals.global_should_recompute = True
                                 self._turn_state = "Base"

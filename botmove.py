@@ -6,12 +6,14 @@ class BotMoveObject:
         move_coordinates: list[tuple[int, int]],
         move_direction: tuple[int, int],
         attempt_score: int,
+        bonus_score,
     ):
         self._move_attempted_letters: list[str] = move_attempted_letters
         self._move_attempted_words: list[str] = move_attempted_words
         self._move_coordinates: list[tuple[int, int]] = move_coordinates
         self._move_direction: tuple[int, int] = move_direction
         self._score: int = attempt_score
+        self._bonus_score = bonus_score
 
     @property
     def move_attempted_letters(self) -> list[str]:
@@ -32,3 +34,11 @@ class BotMoveObject:
     @property
     def score(self) -> int:
         return self._score
+
+    @property
+    def bonus_score(self) -> int:
+        return self._bonus_score
+
+    @bonus_score.setter
+    def bonus_score(self, bonus_score) -> None:
+        self._bonus_score = bonus_score

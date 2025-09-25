@@ -50,7 +50,7 @@ class BaseTile:
         )
         self.recalculate_letters()
         screen.blit(self._letter_image, self._text_coordinates)
-        self._pygame_font = pygame.font.Font("GothamBlack.ttf", Globals.TEXT_SIZE_TILE)
+        self._pygame_font = pygame.font.Font("PWS-2526-WordFeudBot-testing-required-by-Joram\GothamBlack.ttf", Globals.TEXT_SIZE_TILE)
         self._letter_image = self._pygame_font.render(self.letter, True, "Black")
         screen.blit(self._letter_image, self._text_coordinates)
         if self.tile_type in (
@@ -59,7 +59,7 @@ class BaseTile:
             "Played_tilerow_letter",
         ):
             self._letter_value_pygame_font = pygame.font.Font(
-                "GothamBlack.ttf", ceil(Globals.TEXT_SIZE_TILE / 2)
+                "PWS-2526-WordFeudBot-testing-required-by-Joram\GothamBlack.ttf", ceil(Globals.TEXT_SIZE_TILE / 2)
             )
             if not self._is_attempt_blank:
                 self._tile_value = Globals.TILE_LETTER_DICT[self._letter]["value"]
@@ -75,7 +75,7 @@ class BaseTile:
 
     def recalculate_letters(self):
         self._pygame_font: pygame.font.Font = pygame.font.Font(
-            "GothamBlack.ttf", Globals.TEXT_SIZE_TILE
+            "PWS-2526-WordFeudBot-testing-required-by-Joram\GothamBlack.ttf", Globals.TEXT_SIZE_TILE
         )
         self._letter_image: pygame.surface.Surface = self._pygame_font.render(
             self._letter, True, "Black"

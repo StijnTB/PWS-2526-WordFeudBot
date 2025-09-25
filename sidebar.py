@@ -36,7 +36,7 @@ class BaseButton:
         self._hidden: bool = hidden
         self._tile_indexes_selected_list: list[int] = []
         self._pygame_font = pygame.font.Font(
-            "GothamBlack.ttf", int(Globals.TEXT_SIZE_TILE * 3 / 4)
+            "PWS-2526-WordFeudBot-testing-required-by-Joram\GothamBlack.ttf", int(Globals.TEXT_SIZE_TILE * 3 / 4)
         )
         self._letter_image = self._pygame_font.render(self.text, True, "Black")
         self._highest_letter_height: int = 0
@@ -166,7 +166,7 @@ class Scores:
             int(Globals.BUTTON_SIZE[1] / 4),  # corner radius
         )
         self._pygame_font: pygame.font.Font = pygame.font.Font(
-            "GothamBlack.ttf", int(Globals.TEXT_SIZE_TILE * 3 / 4)
+            "PWS-2526-WordFeudBot-testing-required-by-Joram\GothamBlack.ttf", int(Globals.TEXT_SIZE_TILE * 3 / 4)
         )
         self._player_image = self._pygame_font.render("PLAYER", True, "Black")
         self._bot_image = self._pygame_font.render("BOT", True, "Black")
@@ -296,7 +296,6 @@ class SideBar:
             <= return_button.vertical_range[1]
         ):
             self.switch_number_button_visibility()
-            print("swap visibility")
             Globals.global_should_recompute = True
             return "Swap_state_back"
         else:
@@ -422,10 +421,6 @@ class ButtonSet:
             hidden=True,
         )
 
-        print(
-            self._run_swap_letters_button._dimensions,
-            self._run_swap_letters_button._coordinates[0] - left_x_coordinate,
-        )
         self._number_buttons_dict["SWAP"] = self._run_swap_letters_button
         self._button_list: list[BaseButton] = [
             self._play_word_button,
