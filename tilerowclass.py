@@ -202,7 +202,7 @@ class BotTileRow(TileRow):
         old_tile_list = self._tile_list.copy()
         try:
             for letter in letters_to_replace:
-                print(f"letter: {letter}; tile list: {self._tile_list}")
+                #print(f"letter: {letter}; tile list: {self._tile_list}")
                 if letter in self._tile_list:
                     self._tile_list.remove(letter)
                 else:

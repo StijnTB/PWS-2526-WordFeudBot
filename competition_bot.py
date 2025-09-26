@@ -10,7 +10,7 @@ import time
 import random
 import math
 from itertools import combinations, product
-
+import time
 
 pygame.init()
 empty_tile: set = {None, "DW", "DL", "TW", "TL", ""}
@@ -54,7 +54,7 @@ class CompetitionBot(Bot):
 
     def getGreedyMove(self) -> BotMoveObject:
         bingo_dict = self.get_bingo_dict()
-        print(bingo_dict)
+        #print(bingo_dict)
         attempt_called: int = 0
         possible_moves_list: list[BotMoveObject] = []
         best_move_greedy: BotMoveObject = BotMoveObject([], [], [], (), 0, 0)
@@ -86,18 +86,32 @@ class CompetitionBot(Bot):
                             word, tile["tile_object"], (0, 1), tiles_in_row
                         )
                         if attempt:
-                            #print(f"attempt success: vertical; score {attempt[0]}; words {attempt[1]}; tiles {attempt[2]}; letters {attempt[3]}")
+                            #print(f"attempt success: horizontal; score {attempt[0]}; words {attempt[1]}; tiles {attempt[2]}; letters {attempt[3]}")
                             attempt_object = BotMoveObject(
                                 attempt[3], attempt[1], attempt[2], (0, 1), attempt[0], 0
                             )
                             used_letters = attempt_object.move_attempted_letters  
                             check_bonus_score = "".join(sorted(used_letters))
                             multiplier = 2
+                                
                             if check_bonus_score in bingo_dict:
                                 if len(attempt_object.move_attempted_letters) == 7:
                                     multiplier = 30
                                     print('bingo!')
                                 attempt_object.bonus_score = bingo_dict[check_bonus_score]*multiplier
+                            else:
+                                for letter in attempt_object.move_attempted_letters:
+                                    nieuw_plankje = attempt_object.move_attempted_letters.copy()
+                                    index = nieuw_plankje.index(letter)
+                                    nieuw_plankje[index] = ' '
+                                    check = "".join(sorted(nieuw_plankje))
+                                    if check in bingo_dict:
+                                        if len(attempt_object.move_attempted_letters) == 7:
+                                            multiplier = 30
+                                            print('bingo!')
+                                        attempt_object.bonus_score = bingo_dict[check]*multiplier
+                                        break
+
                             
                             possible_moves_list.append(attempt_object)
                             if round(attempt[0] + attempt_object.bonus_score, None) > best_move_greedy.score + best_move_greedy.bonus_score:
@@ -143,22 +157,36 @@ class CompetitionBot(Bot):
                             used_letters = attempt_object.move_attempted_letters  
                             check_bonus_score = "".join(sorted(used_letters))
                             multiplier = 2
-                            if check_bonus_score in bingo_dict:
+                            if check_bonus_score in bingo_dict: #blanco werkt niet, omdat de letter niet in de bingodict zit
                                 if len(attempt_object.move_attempted_letters) == 7:
                                     multiplier = 30
                                     print('bingo!')
                                 attempt_object.bonus_score = bingo_dict[check_bonus_score]*multiplier
+                            else:
+                                for letter in attempt_object.move_attempted_letters:
+                                    nieuw_plankje = attempt_object.move_attempted_letters.copy()
+                                    index = nieuw_plankje.index(letter)
+                                    nieuw_plankje[index] = ' '
+                                    check = "".join(sorted(nieuw_plankje))
+                                    if check in bingo_dict:
+                                        if len(attempt_object.move_attempted_letters) == 7:
+                                            multiplier = 30
+                                            print('bingo!')
+                                        attempt_object.bonus_score = bingo_dict[check]*multiplier
+                                        break
                             possible_moves_list.append(attempt_object)
                             if round(attempt[0] + attempt_object.bonus_score, None) > best_move_greedy.score + best_move_greedy.bonus_score:
                                 best_move_greedy = attempt_object
         return best_move_greedy
 
     def competition_bot_play(self):
+        start_time = time.time()
         pygame.display.flip()
         best_move = self.getGreedyMove()
         print(
             f"best move\nwords: {best_move.move_attempted_words};\nscore: {best_move.score};\nletters: {best_move.move_attempted_letters};\ncoordinates {best_move.move_coordinates}"
         )
+        print(f'time {time.time() - start_time}')
         played_tiles: list[str] = best_move.move_attempted_letters
         letters_to_coordinates: list[tuple[str, tuple[int, int]]] = []
         for index in range(len(played_tiles)):
@@ -195,6 +223,7 @@ class CompetitionBot(Bot):
             print("no move found, bot passes")
             Globals.amount_of_passes += 1
             pass  # bot passes; gets more options during further development for tactical bots
+        
         pygame.display.flip()
         time.sleep(1)
     
@@ -502,9 +531,25 @@ class CompetitionBot(Bot):
                     return False
         return True
     
-    def geldige_zeven_letterwoorden(self, plankje):
-        key = "".join(sorted([l.upper() for l in plankje]))
-        return self._word_dict.get(key, [])
+    def geldige_woorden(self, plankje):
+        
+        letters = [l.upper() for l in plankje]
+        n_blank = letters.count(" ")
+        non_blanks = [l for l in letters if l != " "]
+
+        if n_blank == 0 and len(non_blanks) == 7:
+            key7 = "".join(sorted(non_blanks))
+            return self._word_dict.get(7, {}).get(key7, [])
+
+        if n_blank == 1 and len(non_blanks) == 6:
+            key6 = "".join(sorted(non_blanks))
+            return self._word_dict.get(6, {}).get(key6, [])
+
+        if n_blank == 2 and len(non_blanks) == 5:
+            key5 = "".join(sorted(non_blanks))
+            return self._word_dict.get(5, {}).get(key5, [])
+
+
 
     def brute_force(self, plankje, tilebag, k):
         informatie = []
@@ -515,7 +560,7 @@ class CompetitionBot(Bot):
                 nieuw_plankje = plankje.copy()
                 for idx, p in enumerate(letters_te_vervangen):
                     nieuw_plankje[p] = vervangingen[idx]
-                if self.geldige_zeven_letterwoorden(nieuw_plankje):
+                if self.geldige_woorden(nieuw_plankje):
                     aantal_bingo += 1
                 totaal_mogelijkheden += 1
             if totaal_mogelijkheden > 0:
@@ -539,7 +584,7 @@ class CompetitionBot(Bot):
                 nieuwe_letters = random.choices(tilebag, k=k)
                 for idx, p in enumerate(letters_te_vervangen):
                     nieuw_plankje[p] = nieuwe_letters[idx]
-                if self.geldige_zeven_letterwoorden(nieuw_plankje):
+                if self.geldige_woorden(nieuw_plankje):
                     aantal_bingo += 1
 
             bingo_kans = round(aantal_bingo / samples_per_comb * 100, 1)

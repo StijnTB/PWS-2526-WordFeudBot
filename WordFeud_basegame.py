@@ -12,6 +12,7 @@ from competition_bot import CompetitionBot
 from sidebar import SideBar
 from globals import Globals, screen
 from collections import defaultdict
+from itertools import combinations
 import random
 
 
@@ -28,11 +29,35 @@ with open("PWS-2526-WordFeudBot-testing-required-by-Joram\wordlist.txt", "r", en
         wordlist[index] = wordlist[index].upper()
         word_trie.insert(wordlist[index].upper())
 
-word_dict = defaultdict(list)
-for woord in seven_letter_words:
-    key = "".join(sorted(woord.upper()))
-    word_dict[key].append(woord.upper())
-    
+print(len(seven_letter_words))
+
+dict7 = defaultdict(list)
+for w in seven_letter_words:
+    key7 = "".join(sorted(w.upper()))
+    dict7[key7].append(w.upper())
+
+# bouw dict6 (voor 1 blanco): voor elk 7-letterwoord alle 6-letter keys
+dict6 = defaultdict(list)
+for w in seven_letter_words:
+    w_up = w.upper()
+    for comb in combinations(range(7), 6):
+        kept = "".join(sorted(w_up[i] for i in comb))
+        dict6[kept].append(w_up)
+
+# bouw dict5 (voor 2 blanco)
+dict5 = defaultdict(list)
+for w in seven_letter_words:
+    w_up = w.upper()
+    for comb in combinations(range(7), 5):
+        kept = "".join(sorted(w_up[i] for i in comb))
+        dict5[kept].append(w_up)
+
+word_dict = {
+    7: dict7,
+    6: dict6,
+    5: dict5
+}
+
 pygame.init()
 
 screen.fill("Black")
