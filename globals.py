@@ -7,14 +7,14 @@ pygame.init()
 
 
 class Globals:
-    TILE_SIZE: int = 40  # tile size should be divisible by 2 and 10
+    TILE_SIZE: int = 30  # tile size should be divisible by 2 and 10
     BUTTON_SIZE: tuple[int, int] = (148, TILE_SIZE)
     _border_between_tiles_width: int = 2
     _offset_between_screen_categories: int = 10
     amount_of_passes: int = (
         0  # every time the player or the bot passes, increase by 1. after 3, stop game
     )
-    random_seed: int = 2 #the seed to use for every random generator to improve bugfixing
+    random_seed: int = 11 #the seed to use for every random generator to improve bugfixing
     SCREEN_WIDTH = (
         TILE_SIZE * 15
         + 14 * _border_between_tiles_width

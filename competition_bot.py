@@ -18,7 +18,7 @@ empty_tile: set = {None, "DW", "DL", "TW", "TL", ""}
 
 class CompetitionBot(Bot):
     def __init__(
-        self, tilebag: TileBag, board: Board, sidebar: SideBar, wordlist: list[str], player_id: int, word_dict, modus: str
+        self, tilebag: TileBag, board: Board, sidebar: SideBar, wordlist: list[str], player_id: int, word_dict, modus: str, opponent: "CompetitionBot" = None
     ):
         self._tilebag: TileBag = tilebag
         self._board: Board = board
@@ -30,6 +30,7 @@ class CompetitionBot(Bot):
         self._letterFreqs: dict[str, list] = {}
         self._checkList: dict[str, list] = {}
         self._letterTypes: list[int] = [None for _ in range(len(self._wordlist))]
+        self._opponent = opponent
 
         i: int = 0
         for word in self._wordlist:
@@ -53,11 +54,23 @@ class CompetitionBot(Bot):
         return bingo_dict
 
     def getGreedyMove(self) -> BotMoveObject:
-        bingo_dict = self.get_bingo_dict()
+        multiplier = self._player_id
+        if self._tilebag.get_amount_of_letters_remaining() > 0:
+            bingo_dict = self.get_bingo_dict()
+        else:
+            bingo_dict = {}
         #print(bingo_dict)
         attempt_called: int = 0
         possible_moves_list: list[BotMoveObject] = []
-        best_move_greedy: BotMoveObject = BotMoveObject([], [], [], (), 0, 0)
+        if self._tilebag.get_amount_of_letters_remaining() >= 7:
+            max_key = max(bingo_dict, key=bingo_dict.get)
+            max_value = max(bingo_dict.values())
+            to_swap = list(max_key)
+            best_move_greedy: BotMoveObject = BotMoveObject(to_swap, [], [], (), 0, max_value*multiplier)
+        else:
+            best_move_greedy: BotMoveObject = BotMoveObject([], [], [], (), 0, 0)
+
+        
         for row in self._board.game_board:
             skip_row: bool = True
             if self._board._used_rows[int(row)]:
@@ -92,30 +105,45 @@ class CompetitionBot(Bot):
                             )
                             used_letters = attempt_object.move_attempted_letters  
                             check_bonus_score = "".join(sorted(used_letters))
-                            multiplier = 2
+                            
                                 
                             if check_bonus_score in bingo_dict:
                                 if len(attempt_object.move_attempted_letters) == 7:
-                                    multiplier = 30
-                                    print('bingo!')
-                                attempt_object.bonus_score = bingo_dict[check_bonus_score]*multiplier
-                            else:
+                                    attempt_object.bonus_score = bingo_dict[check_bonus_score]*multiplier*100
+                                else:
+                                    attempt_object.bonus_score = bingo_dict[check_bonus_score]*multiplier
+                            elif self.countBlanks() > 0:
                                 for letter in attempt_object.move_attempted_letters:
                                     nieuw_plankje = attempt_object.move_attempted_letters.copy()
                                     index = nieuw_plankje.index(letter)
                                     nieuw_plankje[index] = ' '
                                     check = "".join(sorted(nieuw_plankje))
                                     if check in bingo_dict:
-                                        if len(attempt_object.move_attempted_letters) == 7:
-                                            multiplier = 30
-                                            print('bingo!')
-                                        attempt_object.bonus_score = bingo_dict[check]*multiplier
-                                        break
+                                        new_bonus = bingo_dict[check]*multiplier*100 if len(attempt_object.move_attempted_letters) == 7 else bingo_dict[check]*multiplier
+                                        if new_bonus > attempt_object.bonus_score:
+                                            attempt_object.bonus_score = new_bonus
+                                            
+                            elif self.countBlanks() == 2: #niet efficent, maar voor nu goed genoeg 
+                                for i in range(0, len(attempt_object.move_attempted_letters)):
+                                    for j in range(0, len(attempt_object.move_attempted_letters)):
+                                        if i != j:
+                                            nieuw_plankje = attempt_object.move_attempted_letters.copy()
+                                            nieuw_plankje[i] = ' '
+                                            nieuw_plankje[j] = ' '
+                                            check = "".join(sorted(nieuw_plankje))
+                                            if check in bingo_dict:
+                                                new_bonus = bingo_dict[check]*multiplier*100 if len(attempt_object.move_attempted_letters) == 7 else bingo_dict[check]*multiplier
+                                                if new_bonus > attempt_object.bonus_score:
+                                                    attempt_object.bonus_score = new_bonus
+                                                    
+                                                
+                                                
 
                             
                             possible_moves_list.append(attempt_object)
                             if round(attempt[0] + attempt_object.bonus_score, None) > best_move_greedy.score + best_move_greedy.bonus_score:
                                 best_move_greedy = attempt_object
+                                #print(best_move_greedy.bonus_score + best_move_greedy.score, best_move_greedy.move_attempted_words)
 
         for column_index in range(0, 15):
             skip_column: bool = True
@@ -156,27 +184,43 @@ class CompetitionBot(Bot):
                             )
                             used_letters = attempt_object.move_attempted_letters  
                             check_bonus_score = "".join(sorted(used_letters))
-                            multiplier = 2
-                            if check_bonus_score in bingo_dict: #blanco werkt niet, omdat de letter niet in de bingodict zit
+                            
+                            if check_bonus_score in bingo_dict:
                                 if len(attempt_object.move_attempted_letters) == 7:
-                                    multiplier = 30
-                                    print('bingo!')
-                                attempt_object.bonus_score = bingo_dict[check_bonus_score]*multiplier
-                            else:
+                                    attempt_object.bonus_score = bingo_dict[check_bonus_score]*multiplier*100
+                                    
+                                else:
+                                    attempt_object.bonus_score = bingo_dict[check_bonus_score]*multiplier
+                            elif self.countBlanks() > 0:
                                 for letter in attempt_object.move_attempted_letters:
                                     nieuw_plankje = attempt_object.move_attempted_letters.copy()
                                     index = nieuw_plankje.index(letter)
                                     nieuw_plankje[index] = ' '
                                     check = "".join(sorted(nieuw_plankje))
                                     if check in bingo_dict:
-                                        if len(attempt_object.move_attempted_letters) == 7:
-                                            multiplier = 30
-                                            print('bingo!')
-                                        attempt_object.bonus_score = bingo_dict[check]*multiplier
-                                        break
+                                        new_bonus = bingo_dict[check]*multiplier*100 if len(attempt_object.move_attempted_letters) == 7 else bingo_dict[check]*multiplier
+                                        if new_bonus > attempt_object.bonus_score:
+                                            attempt_object.bonus_score = new_bonus
+                                            
+                            elif self.countBlanks() == 2:            
+                                for i in range(0, len(attempt_object.move_attempted_letters)):
+                                    for j in range(0, len(attempt_object.move_attempted_letters)):
+                                        if i != j:
+                                            nieuw_plankje = attempt_object.move_attempted_letters.copy()
+                                            nieuw_plankje[i] = ' '
+                                            nieuw_plankje[j] = ' '
+                                            check = "".join(sorted(nieuw_plankje))
+                                            if check in bingo_dict:
+                                                new_bonus = bingo_dict[check]*multiplier*100 if len(attempt_object.move_attempted_letters) == 7 else bingo_dict[check]*multiplier
+                                                if new_bonus > attempt_object.bonus_score:
+                                                    attempt_object.bonus_score = new_bonus
+                                                    
+                                                
                             possible_moves_list.append(attempt_object)
                             if round(attempt[0] + attempt_object.bonus_score, None) > best_move_greedy.score + best_move_greedy.bonus_score:
                                 best_move_greedy = attempt_object
+                                #print(best_move_greedy.bonus_score + best_move_greedy.score, best_move_greedy.move_attempted_words)
+
         return best_move_greedy
 
     def competition_bot_play(self):
@@ -186,39 +230,45 @@ class CompetitionBot(Bot):
         print(
             f"best move\nwords: {best_move.move_attempted_words};\nscore: {best_move.score};\nletters: {best_move.move_attempted_letters};\ncoordinates {best_move.move_coordinates}"
         )
-        print(f'time {time.time() - start_time}')
-        played_tiles: list[str] = best_move.move_attempted_letters
-        letters_to_coordinates: list[tuple[str, tuple[int, int]]] = []
-        for index in range(len(played_tiles)):
-            letters_to_coordinates.append(
-                (played_tiles[index], best_move.move_coordinates[index])
-            )
-        cross_off_tilerow: list[str] = self._tilerow._tile_list.copy()
-        move_failed: bool = False
-        blanks_coordinates: list[tuple[int, int]] = []
-        print(cross_off_tilerow)
-        for tile in letters_to_coordinates:
-            if tile[0] in cross_off_tilerow:
-                cross_off_tilerow.remove(tile[0])
-            elif not tile[0] in cross_off_tilerow:
-                if " " in cross_off_tilerow:
-                    cross_off_tilerow.remove(" ")
-                    blanks_coordinates.append(tile[1])
-                else:
-                    print(f"move failed: more blanks used than possible with tilerow, failed on tile '{tile[0]}")
-                    move_failed = True
-        if not move_failed and best_move.score > 0:
-            self._board.bot_play_word(
-                best_move.move_coordinates,
-                best_move.move_attempted_letters,
-                blanks_coordinates,
-            )
+        #print(f'time {time.time() - start_time}')
+        if best_move.score > 0:
+            played_tiles: list[str] = best_move.move_attempted_letters
+            letters_to_coordinates: list[tuple[str, tuple[int, int]]] = []
+            for index in range(len(played_tiles)):
+                letters_to_coordinates.append(
+                    (played_tiles[index], best_move.move_coordinates[index])
+                )
+            cross_off_tilerow: list[str] = self._tilerow._tile_list.copy()
+            move_failed: bool = False
+            blanks_coordinates: list[tuple[int, int]] = []
+            #print(cross_off_tilerow)
+            for tile in letters_to_coordinates:
+                if tile[0] in cross_off_tilerow:
+                    cross_off_tilerow.remove(tile[0])
+                elif not tile[0] in cross_off_tilerow:
+                    if " " in cross_off_tilerow:
+                        cross_off_tilerow.remove(" ")
+                        blanks_coordinates.append(tile[1])
+                    else:
+                        print(f"move failed: more blanks used than possible with tilerow, failed on tile '{tile[0]}")
+                        move_failed = True
+            if not move_failed:
+                self._board.bot_play_word(
+                    best_move.move_coordinates,
+                    best_move.move_attempted_letters,
+                    blanks_coordinates,
+                )
+                self._tilerow.get_new_letters(best_move.move_attempted_letters)
+                if self._player_id == 1:
+                    self._sidebar._score_object.bot_score += best_move.score
+                elif self._player_id == 2:
+                    self._sidebar._score_object.player_score += best_move.score
+                Globals.amount_of_passes = 0
+        elif best_move.score == 0 and best_move.bonus_score > 0:
             self._tilerow.get_new_letters(best_move.move_attempted_letters)
-            if self._player_id == 1:
-                self._sidebar._score_object.bot_score += best_move.score
-            elif self._player_id == 2:
-                self._sidebar._score_object.player_score += best_move.score
-            Globals.amount_of_passes = 0
+            self._tilebag.add_letters(best_move.move_attempted_letters)
+            #print(self._tilebag.get_amount_of_letters_remaining())
+            print(f'Swapped {best_move.move_attempted_letters}')
         else:
             print("no move found, bot passes")
             Globals.amount_of_passes += 1
@@ -596,10 +646,11 @@ class CompetitionBot(Bot):
 
     def bingo_kans(self, plankje, tilebag, k, samples):
         
-        tilebag_size = len(tilebag)
+        tilebag_size = len(tilebag) + len(self._opponent._tilerow._tile_list)
         totaal_mogelijkheden = math.comb(7, k) * (tilebag_size ** k)
-
+        tilebag_unseen = tilebag.copy()
+        tilebag_unseen.extend(self._opponent._tilerow._tile_list)
         if totaal_mogelijkheden <= samples:
-            return self.brute_force(plankje, tilebag, k)
+            return self.brute_force(plankje, tilebag_unseen, k)
         else:
-            return self.sampling(plankje, tilebag, k, samples)
+            return self.sampling(plankje, tilebag_unseen, k, samples)

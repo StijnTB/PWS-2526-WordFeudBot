@@ -42,3 +42,6 @@ class TileBag:
     
     def get_letter_list(self):
         return self._bag_list
+    
+    def add_letters(self, letters_to_add):
+        self._bag_list.extend(letters_to_add)

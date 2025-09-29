@@ -29,14 +29,12 @@ with open("PWS-2526-WordFeudBot-testing-required-by-Joram\wordlist.txt", "r", en
         wordlist[index] = wordlist[index].upper()
         word_trie.insert(wordlist[index].upper())
 
-print(len(seven_letter_words))
-
 dict7 = defaultdict(list)
 for w in seven_letter_words:
     key7 = "".join(sorted(w.upper()))
     dict7[key7].append(w.upper())
 
-# bouw dict6 (voor 1 blanco): voor elk 7-letterwoord alle 6-letter keys
+
 dict6 = defaultdict(list)
 for w in seven_letter_words:
     w_up = w.upper()
@@ -44,7 +42,7 @@ for w in seven_letter_words:
         kept = "".join(sorted(w_up[i] for i in comb))
         dict6[kept].append(w_up)
 
-# bouw dict5 (voor 2 blanco)
+
 dict5 = defaultdict(list)
 for w in seven_letter_words:
     w_up = w.upper()
@@ -66,12 +64,14 @@ game_board = Board(Globals.BOARD_LAYOUT_LIST, word_trie)
 tilebag = TileBag()
 sidebar = SideBar()
 player = CompetitionBot(tilebag, game_board, sidebar, wordlist, 2, word_dict, 'a')
-bot = CompetitionBot(tilebag, game_board, sidebar, wordlist, 1, word_dict, 'a')
 
+bot = CompetitionBot(tilebag, game_board, sidebar, wordlist, 1, word_dict, 'a')
+player._opponent = bot
+bot._opponent = player
 Globals.global_should_recompute = True
 
 turn: int = random.randint(0, 1)
-turn = 1
+turn = 0
 running = True
 exit_phase: bool = True
 end_time = time.time()
@@ -86,7 +86,7 @@ while running:
         bot.competition_bot_play()
         turn = 0
     amount_of_turns += 1
-    print(amount_of_turns)
+    #print(amount_of_turns)
     print(f"player tilerow: {player._tilerow._tile_list}")
     print(f"bot tilerow: {bot._tilerow._tile_list}")
     if Globals.amount_of_passes == 3:
@@ -94,7 +94,7 @@ while running:
         sidebar._score_object.bot_score -= bot._tilerow.get_remaining_points()
         pygame.display.flip()
         break
-    if set(player._tilerow._tile_list) == {""}:
+    if set(player._tilerow._tile_list) == {""} or player._tilerow._tile_list == []:
         sidebar._score_object.player_score += bot._tilerow.get_remaining_points()
         sidebar._score_object.bot_score -= bot._tilerow.get_remaining_points()
         pygame.display.flip()
