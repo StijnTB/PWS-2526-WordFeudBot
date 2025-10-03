@@ -63,15 +63,15 @@ screen.fill("Black")
 game_board = Board(Globals.BOARD_LAYOUT_LIST, word_trie)
 tilebag = TileBag()
 sidebar = SideBar()
-player = CompetitionBot(tilebag, game_board, sidebar, wordlist, 2, word_dict, 'a')
+player = CompetitionBot(tilebag, game_board, sidebar, wordlist, 2, word_dict, 'kansrekening')
 
-bot = CompetitionBot(tilebag, game_board, sidebar, wordlist, 1, word_dict, 'a')
+bot = CompetitionBot(tilebag, game_board, sidebar, wordlist, 1, word_dict, 'greedy')
 player._opponent = bot
 bot._opponent = player
 Globals.global_should_recompute = True
 
 turn: int = random.randint(0, 1)
-turn = 0
+turn = 1
 running = True
 exit_phase: bool = True
 end_time = time.time()
@@ -89,6 +89,7 @@ while running:
     #print(amount_of_turns)
     print(f"player tilerow: {player._tilerow._tile_list}")
     print(f"bot tilerow: {bot._tilerow._tile_list}")
+    print(f"tiles remaining: {tilebag.get_amount_of_letters_remaining()}")
     if Globals.amount_of_passes == 3:
         sidebar._score_object.player_score -= player._tilerow.get_remaining_points()
         sidebar._score_object.bot_score -= bot._tilerow.get_remaining_points()
