@@ -21,3 +21,7 @@ class Bot:
         self._is_turn = True
         while self._is_turn:
             pass
+
+    @property
+    def tilerow(self) -> BotTileRow:
+        return self._tilerow

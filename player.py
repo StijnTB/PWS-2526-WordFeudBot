@@ -51,9 +51,9 @@ class Player:
                                 0
                                 <= mouse_coordinates[0]
                                 <= (
-                                    Globals.TILE_SIZE * len(self._tilerow._tile_list)
-                                    + (len(self._tilerow._tile_list) - 1)
-                                    * Globals._border_between_tiles_width
+                                    Globals.TILE_SIZE * len(self._tilerow.tile_list)
+                                    + (len(self._tilerow.tile_list) - 1)
+                                    * Globals.BORDER_BETWEEN_TILES_WIDTH
                                 )
                             ):  # mouse is in area of TileRow
                                 self._tilerow.change_selected_tile(mouse_coordinates)
@@ -63,13 +63,13 @@ class Player:
                                 <= (
                                     Globals.SCREEN_TILES_STARTING_HEIGHT
                                     + Globals.TILE_SIZE * 15
-                                    + Globals._border_between_tiles_width * 14
+                                    + Globals.BORDER_BETWEEN_TILES_WIDTH * 14
                                 )
                                 and 0
                                 <= mouse_coordinates[0]
                                 <= (
                                     Globals.TILE_SIZE * 15
-                                    + Globals._border_between_tiles_width * 14
+                                    + Globals.BORDER_BETWEEN_TILES_WIDTH * 14
                                 )
                             ):  # mouse is in area of Board
                                 clicked_tile_coordinates: tuple[int, int] = (
@@ -99,12 +99,13 @@ class Player:
                                             == "Try_board/Selected_tilerow"
                                         ):  # selected tile has a letter but is still in try type
                                             is_attempted_blank: bool = False
-                                            if clicked_board_tile._is_attempt_blank:
+                                            if clicked_board_tile.is_attempt_blank:
                                                 is_attempted_blank = True
                                             self._tilerow.return_clicked_tile(
                                                 clicked_board_tile.letter,
                                                 True,
                                                 clicked_tile_coordinates,
+                                                is_attempted_blank
                                             )
                                             self._game_board.reset_tile(
                                                 clicked_tile_coordinates
@@ -120,7 +121,7 @@ class Player:
                                         == "Try_board/Selected_tilerow"
                                     ):  # selected tile has a letter but is still in try type
                                         is_attempted_blank: bool = False
-                                        if clicked_board_tile._is_attempt_blank:
+                                        if clicked_board_tile.is_attempt_blank:
                                             is_attempted_blank = True
                                         self._tilerow.return_clicked_tile(
                                             clicked_board_tile.letter,
@@ -132,12 +133,12 @@ class Player:
                                             clicked_tile_coordinates
                                         )
                             elif (
-                                self._sidebar._horizontal_range[0]
+                                self._sidebar.horizontal_range[0]
                                 <= mouse_coordinates[0]
-                                <= self._sidebar._horizontal_range[1]
-                                and self._sidebar._vertical_range[0]
+                                <= self._sidebar.horizontal_range[1]
+                                and self._sidebar.vertical_range[0]
                                 <= mouse_coordinates[1]
-                                <= self._sidebar._vertical_range[1]
+                                <= self._sidebar.vertical_range[1]
                             ):  # mouse is in area of button menu
                                 clicked_button = self._sidebar.button_clicked(
                                     mouse_coordinates
@@ -147,7 +148,7 @@ class Player:
                                         case "PLAY WORD":
                                             attempt_information = (
                                                 self._game_board.player_try_word(
-                                                    self._tilerow._board_set_tile_list
+                                                    self._tilerow.board_set_tile_list
                                                 )
                                             )
                                             attempt_success = attempt_information[0]
@@ -155,7 +156,7 @@ class Player:
                                                 print("success")
                                                 print(attempt_information[1])
                                                 self._tilerow.get_new_letters()
-                                                self._sidebar._score_object.player_score += attempt_information[
+                                                self._sidebar.score_object.player_score += attempt_information[
                                                     1
                                                 ]
                                                 self._is_turn = False
@@ -166,15 +167,15 @@ class Player:
                                         case "RETURN TILES":
                                             self._tilerow.return_full_tilerow()
                                             self._game_board.reset_tiles(
-                                                self._tilerow._board_set_tile_list
+                                                self._tilerow.board_set_tile_list
                                             )
-                                            self._tilerow._board_set_tile_list.clear()
+                                            self._tilerow.board_set_tile_list.clear()
                                         case "PASS TURN":
                                             self._tilerow.return_full_tilerow()
                                             self._game_board.reset_tiles(
-                                                self._tilerow._board_set_tile_list
+                                                self._tilerow.board_set_tile_list
                                             )
-                                            self._tilerow._board_set_tile_list.clear()
+                                            self._tilerow.board_set_tile_list.clear()
                                             self._is_turn = False
                                         case "SWAP LETTERS":
                                             if (
@@ -184,11 +185,13 @@ class Player:
                                                 self._sidebar.switch_number_button_visibility()
                                                 self._tilerow.return_full_tilerow()
                                                 self._game_board.reset_tiles(
-                                                    self._tilerow._board_set_tile_list
+                                                    self._tilerow.board_set_tile_list
                                                 )
-                                                self._tilerow._board_set_tile_list.clear()
+                                                self._tilerow.board_set_tile_list.clear()
                                                 self._turn_state = "Swap"
                                                 self._is_turn = False
+                                        case _:
+                                            pass
                                 else:
                                     pass
                         elif self._turn_state == "Swap":
@@ -198,7 +201,7 @@ class Player:
                             if return_value == "Swap_letters":
                                 print("swap letters")
                                 swappable_indexes = (
-                                    self._sidebar._button_set.get_swappable_indexes()
+                                    self._sidebar.button_set.get_swappable_indexes()
                                 )
                                 print(swappable_indexes)
                                 self._turn_state = "Base"
@@ -226,3 +229,7 @@ class Player:
             self._sidebar.update()
             self._tilerow.update()
             Globals.global_should_recompute = False
+
+    @property
+    def tilerow(self) -> PlayerTileRow:
+        return self._tilerow
