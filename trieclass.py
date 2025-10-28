@@ -1,7 +1,7 @@
 class TRIENode:
     def __init__(self) -> None:
-        self.children = {}
-        self.is_word = False
+        self.children: dict[str, TRIENode] = {}
+        self.is_word: bool = False
 
 
 class TRIE:
@@ -42,7 +42,7 @@ class TRIE:
                     "Y",
                     "Z",
                 ]:
-                    return
+                    return None
             self._amount_of_words += 1
             for letter in word:
                 if letter not in node.children:
@@ -51,10 +51,11 @@ class TRIE:
             node.is_word = True
 
     def search_word(self, word: str) -> bool:
-        node = self.root
+        node: TRIENode = self.root
         word = word.upper()
         for letter in word:
             if letter not in node.children:
                 return False
-            node = node.children[letter]
+            else:
+                node = node.children[letter]
         return node.is_word
