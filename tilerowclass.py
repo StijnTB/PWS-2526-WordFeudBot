@@ -2,7 +2,9 @@ from tileclass import *
 from tilebagclass import TileBag
 from globals import *
 import random
-random.seed(Globals.random_seed)
+
+random.seed(Globals.RANDOM_SEED)
+
 
 class TileRow:
     def __init__(self, tilebag: TileBag):
@@ -16,6 +18,14 @@ class TileRow:
                 remaining_points += Globals.TILE_LETTER_DICT[letter]["value"]
         return remaining_points
 
+    @property
+    def tile_list(self) -> list[str]:
+        return self._tile_list
+
+    @tile_list.setter
+    def tile_list(self, new_tile_list: list[str]) -> None:
+        self._tile_list = new_tile_list
+
 
 class PlayerTileRow(TileRow):
     def __init__(self, tilebag: TileBag):
@@ -27,15 +37,14 @@ class PlayerTileRow(TileRow):
         self._played_tile_list: list[RowTile] = (
             []
         )  # contains the rowtile data of tiles played in this turn
-        self._board_set_tile_list: list[tuple[int, int]] = (
-            []
-        )  # contains the coordinates of tiles which are set in this turn
+        self._board_set_tile_list: list[tuple[int, int]] =  [] # contains the coordinates of tiles which are set in this turn
         for index, tile_letter in enumerate(self._tile_list):
             self._tile_row_objects.append(RowTile(letter=tile_letter, row_coords=index))
         Globals.global_should_recompute = True
         self.update()
 
     def swap_letters(self, list_of_swapped_indexes: list[int]):
+        print(self._tile_list)
         letters_to_return: list[str] = []
         for index in list_of_swapped_indexes:
             letter = self._tile_list[index]
@@ -45,6 +54,7 @@ class PlayerTileRow(TileRow):
         if len(letters_to_return) > 0:
             new_letters = self._tilebag.swap_letters(letters_to_return)
             self._tile_list.extend(new_letters)
+            print(self._tile_list)
             self.reload_tiles()
 
     def reload_tiles(self) -> None:
@@ -53,12 +63,12 @@ class PlayerTileRow(TileRow):
             tile_object.letter = self._tile_list[index]
 
     def shuffle_row(self):
-        shuffleable_row_list: list = self._tile_list.copy()
+        shuffleable_row_list: list[str] = self._tile_list.copy()
         tile_object: RowTile
-        unshufflable_index_list: list = []
+        unshufflable_index_list: list[int] = []
         for tile_object in self._played_tile_list:
             shuffleable_row_list.remove(tile_object.letter)
-            unshufflable_index_list.append(tile_object._row_coordinate)
+            unshufflable_index_list.append(tile_object.row_coordinate)
         random.shuffle(shuffleable_row_list)
         current_index_shuffled_list: int = 0
         for index in range(len(self._tile_list)):
@@ -83,9 +93,9 @@ class PlayerTileRow(TileRow):
         for index in range(0, len(self._tile_list)):
             if index < len(self._tile_list):
                 if (
-                    (self._tile_size + Globals._border_between_tiles_width) * index
+                    (self._tile_size + Globals.BORDER_BETWEEN_TILES_WIDTH) * index
                     <= mouse_x
-                    < (self._tile_size + Globals._border_between_tiles_width)
+                    < (self._tile_size + Globals.BORDER_BETWEEN_TILES_WIDTH)
                     * (index + 1)
                 ):
                     selected_tile_index = index
@@ -152,21 +162,21 @@ class PlayerTileRow(TileRow):
                 break
 
     def get_new_letters(self):
-        if len(self._played_tile_list) <= len(self._tilebag._bag_list):
+        if len(self._played_tile_list) <= len(self._tilebag.bag_list):
             for tile in self._played_tile_list:
                 tile.letter = self._tilebag.grab_letters(1)[0]
                 tile.tile_type = "Set_board/Base_tilerow"
-                self._tile_list[tile._row_coordinate] = tile.letter
+                self._tile_list[tile.row_coordinate] = tile.letter
         else:  # less than the played amount of tiles are in the bag
             for tile in self._played_tile_list:
-                if len(self._tilebag._bag_list) >= 1:
+                if len(self._tilebag.bag_list) >= 1:
                     tile.letter = self._tilebag.grab_letters(1)[0]
                     tile.tile_type = "Set_board/Base_tilerow"
-                    self._tile_list[tile._row_coordinate] = tile.letter
-                elif len(self._tilebag._bag_list) == 0:
+                    self._tile_list[tile.row_coordinate] = tile.letter
+                elif len(self._tilebag.bag_list) == 0:
                     tile.tile_type = "Empty_tile"
                     tile.letter = ""
-                    self._tile_list[tile._row_coordinate] = tile.letter
+                    self._tile_list[tile.row_coordinate] = tile.letter
         self._board_set_tile_list.clear()
         self._played_tile_list.clear()
 
@@ -192,17 +202,21 @@ class PlayerTileRow(TileRow):
         self._selected_letter = new_letter
         # Globals.global_should_recompute = True
 
+    @property
+    def board_set_tile_list(self) -> list[tuple[int, int]]:
+        return self._board_set_tile_list
+
 
 class BotTileRow(TileRow):
     def __init__(self, tilebag: TileBag):
         super().__init__(tilebag)
         self._max_grabbable_amount_from_tilebag: int = 7
+        
 
     def get_new_letters(self, letters_to_replace: list[str]) -> None:
         old_tile_list = self._tile_list.copy()
         try:
             for letter in letters_to_replace:
-                #print(f"letter: {letter}; tile list: {self._tile_list}")
                 if letter in self._tile_list:
                     self._tile_list.remove(letter)
                 else:
@@ -210,18 +224,28 @@ class BotTileRow(TileRow):
                         self._tile_list.remove(" ")
                     else:
                         raise ValueError()
-            if len(self._tilebag._bag_list) == 0:
+            if len(self._tilebag.bag_list) == 0:
                 pass
-            elif len(self._tilebag._bag_list) >= len(letters_to_replace):
+            elif len(self._tilebag.bag_list) >= len(letters_to_replace):
                 self._tile_list.extend(
                     self._tilebag.grab_letters(len(letters_to_replace))
                 )
-            elif len(self._tilebag._bag_list) < len(letters_to_replace):
+            elif len(self._tilebag.bag_list) < len(letters_to_replace):
                 self._tile_list.extend(
-                    self._tilebag.grab_letters(len(self._tilebag._bag_list))
+                    self._tilebag.grab_letters(len(self._tilebag.bag_list))
                 )
         except Exception as e:
             print(e)
             print(
                 f"letters to replace {letters_to_replace}; tile list {old_tile_list}; changed tile list {self._tile_list}"
             )
+    
+    def swap_letters(self, letters_to_return: list[str]) -> None:
+        for letter in letters_to_return:
+            self._tile_list.remove(letter)
+        self._tile_list.extend(self._tilebag.swap_letters(letters_to_return))
+        print(self._tile_list)
+
+    def amount_of_letter_on_rack(self, tilerow, letter):
+        return tilerow.count(letter)
+
