@@ -12,6 +12,7 @@ import random
 import math
 from itertools import combinations, product
 import json
+from utils import DictBinSearch, get_expected_multiplication
 
 random.seed(Globals.RANDOM_SEED)
 
@@ -93,7 +94,7 @@ class CompetitionBot(Bot):
                 possible_moves_list.extend(possible_moves_horizontal)
                 if round(
                     (best_move_greedy.score + best_move_greedy.bingo_bonus_score - best_move_greedy.position_degradation_score)
-                ) < round(best_move_horizontal.score + best_move_horizontal.bingo_bonus_score - best_move_greedy.position_degradation_score):
+                ) < round(best_move_horizontal.score + best_move_horizontal.bingo_bonus_score - best_move_horizontal.position_degradation_score):
                     best_move_greedy = best_move_horizontal
 
         for column_index in range(0, 15):
@@ -115,9 +116,9 @@ class CompetitionBot(Bot):
                 )
                 possible_moves_list.extend(possible_moves_vertical)
                 if round(
-                    (best_move_greedy.score + best_move_greedy.bingo_bonus_score- best_move_greedy.position_degradation_score)
+                    (best_move_greedy.score + best_move_greedy.bingo_bonus_score - best_move_greedy.position_degradation_score)
                 ) < round(
-                    (best_move_vertical.score + best_move_vertical.bingo_bonus_score - best_move_greedy.position_degradation_score)
+                    (best_move_vertical.score + best_move_vertical.bingo_bonus_score - best_move_vertical.position_degradation_score)
                 ):
                     best_move_greedy = best_move_vertical
 
@@ -194,16 +195,10 @@ class CompetitionBot(Bot):
             )
         return tiles_in_array
 
-    def get_attempt_objects_in_array(
-        self,
-        row_or_column: Literal["row", "column"],
-        array_index: int,
-        tiles_in_array: str,
-        bingo_dict: dict[str, float],
-    ) -> tuple[BotMoveObject, list[BotMoveObject]]:
+    def get_attempt_objects_in_array(self, row_or_column: Literal["row", "column"], array_index: int, tiles_in_array: str, bingo_dict: dict[str, float]) -> tuple[BotMoveObject, list[BotMoveObject]]:
         attempt_called: int = 0
         possible_moves_list: list[BotMoveObject] = []
-        best_move_greedy: BotMoveObject = BotMoveObject([], [], [], (1, 1), -99999999)
+        best_move_greedy: BotMoveObject = BotMoveObject([], [], [], (1, 1), -9999999)
         filtered_wordlist: list[str] = self.filter(tiles_in_array)
         for word in filtered_wordlist:
             for tile in (
@@ -235,12 +230,14 @@ class CompetitionBot(Bot):
                         attempt[2],
                         (0, 1) if row_or_column == "row" else (1, 0),
                         attempt[0],
+                        0,
+                        attempt[4]
                     )
                     possible_moves_list.append(attempt_object)
                     if self._modus in ("kansberekening", "combi"):
                         self.update_bingo_bonus_score(attempt_object, bingo_dict)
-                    if self._modus in ("bordpositie", "combi"):
-                        self.update_boardposition_score(attempt_object)
+                    #if self._modus in ("bordpositie", "combi"):
+                    #    self.update_boardposition_score(attempt_object)
                     if round(
                         (attempt_object.score + attempt_object.bingo_bonus_score - attempt_object.position_degradation_score)
                     ) > round(
@@ -248,32 +245,26 @@ class CompetitionBot(Bot):
                     ):
                         best_move_greedy = attempt_object
         return (best_move_greedy, possible_moves_list)
-
-    def try_word_on_tile(
-        self,
-        word: str,
-        tile: BoardTile,
-        direction: tuple[int, int],
-        tiles_in_array: str,
-    ) -> Literal[False] | tuple[int, list[str], list[tuple[int, int]], list[str]]:
+  
+    def try_word_on_tile(self, word: str, tile: BoardTile, direction: tuple[int, int], tiles_in_array: str) -> Literal[False] | tuple[int, list[str], list[tuple[int, int]], list[str], float]:
         if self.ends_out_of_bounds(tile, direction, word):
             return False
-
+ 
         opposite_direction: tuple[int, int] = (1, 0) if direction == (0, 1) else (0, 1)
-
+ 
         if self.touches_no_tiles(tile, direction, opposite_direction, word):
             return False
-
+ 
         if self.word_has_letters_before_or_after(tile, direction, word):
             return False
-
+ 
         rearrange_tiles_results: bool | tuple[list[tuple[int, int]], list[str]] = (
             self.rearranges_tiles(tile, direction, word, tiles_in_array)
         )
         if isinstance(rearrange_tiles_results, bool):
             return False
         word_attempt_tiles, word_attempt_letters = rearrange_tiles_results
-
+ 
         points_results = self.get_points_and_attempted_words(
             tile,
             direction,
@@ -284,11 +275,11 @@ class CompetitionBot(Bot):
         )
         if not points_results:
             return False
-        total_points, attempted_words = points_results
+        total_points, attempted_words, boardposition_score = points_results
         if total_points == 0:
             return False
-        return (total_points, attempted_words, word_attempt_tiles, word_attempt_letters)
-
+        return (total_points, attempted_words, word_attempt_tiles, word_attempt_letters, boardposition_score)
+ 
     def ends_out_of_bounds(
         self, tile: BoardTile, direction: tuple[int, int], word: str
     ) -> bool:
@@ -473,15 +464,7 @@ class CompetitionBot(Bot):
             return True  # the attempted word has no adjacent tiles and does not lie on any already used tile
         return False
 
-    def get_points_and_attempted_words(
-        self,
-        tile: BoardTile,
-        direction: tuple[int, int],
-        opposite_direction: tuple[int, int],
-        word: str,
-        word_attempt_letters: list[str],
-        word_attempt_tiles: list[tuple[int, int]],
-    ) -> Literal[False] | tuple[int, list[str]]:
+    def get_points_and_attempted_words(self, tile: BoardTile, direction: tuple[int, int], opposite_direction: tuple[int, int], word: str, word_attempt_letters: list[str], word_attempt_tiles: list[tuple[int, int]]) -> Literal[False] | tuple[int, list[str], float]:
         total_points: int = 0
         attempted_words: list[str] = []
         attempted_words.append(word)
@@ -512,7 +495,7 @@ class CompetitionBot(Bot):
                 and tile_coordinates[1] <= first_tile_coordinates[1]
             ):
                 first_tile_coordinates = tile_coordinates
-        cross_off_tilerow = self._tilerow.tile_list.copy()
+        cross_off_tilerow = self.tilerow.tile_list.copy()
         blank_coordinate_indexes: list[int] = []
         for index, letter in enumerate(word_attempt_letters):
             if letter in cross_off_tilerow:
@@ -527,7 +510,7 @@ class CompetitionBot(Bot):
         main_word, main_word_value = self._board.get_word_from_tile(
             first_tile_coordinates, direction, set_tiles_list, blank_coordinates
         )
-
+ 
         if len(main_word) > 1:
             if not self._board.word_tree.search_word(main_word):
                 self._board.reset_tiles(set_tiles_list)
@@ -546,9 +529,17 @@ class CompetitionBot(Bot):
                 total_points += word_value
         if len(set_tiles_list) == 7:
             total_points += 40  # add 40 for all tiles set
-        self._board.reset_tiles(set_tiles_list)
+        boardposition_score: float = 0
+        if self._modus in ("bordpositie","combi"):
+            
+            #print(attempted_words)
 
-        return (total_points, attempted_words)
+            boardposition_score = self.update_boardposition_score(word_attempt_tiles, direction, word_attempt_letters, attempted_words)
+            
+        self._board.reset_tiles(set_tiles_list)
+ 
+        return (total_points, attempted_words, boardposition_score)
+    
 
     def filter(self, letters_on_selected: str):
         blanks: int = 0
@@ -700,7 +691,7 @@ class CompetitionBot(Bot):
             for letters, chance in [item for sublist in result for item in sublist]
         }
 
-    def get_expected_multiplication(self, current_tile: BoardTile, attempt_object: BotMoveObject) -> float:
+    """def get_expected_multiplication(self, current_tile: BoardTile, attempt_object: BotMoveObject) -> float:
         # the expected multiplication is the factor which the bot expects will be realised by a word played over the current tile
         # this factor depends on the value multiplications and the distance: greater distance means less influence on the expected multiplication
         expected_multiplication: float = Globals.BOARDPOSITION_FACTORS["multiplication_danger_base"]
@@ -710,6 +701,7 @@ class CompetitionBot(Bot):
             current_tile.board_coordinates[1]
              - attempt_object.move_direction[0] * current_tile.board_coordinates[1]
         )
+        print()
         for check_tile in [
             self._board.game_board[
                 str(starting_tile[0] + index * attempt_object.move_direction[1])
@@ -717,7 +709,9 @@ class CompetitionBot(Bot):
                     "tile_object"
                 ]
                 for index in range(0,14)
+                
         ]:
+            print('coordinaten check:', check_tile.board_coordinates)
             # calculate distance using pythagorean theorem: distance = root(horizontal distance^2 + vertical distance^2)
             distance_movetile_to_checktile: int = (
                 (check_tile.board_coordinates[0] - current_tile.board_coordinates[0])
@@ -725,182 +719,207 @@ class CompetitionBot(Bot):
                 + (check_tile.board_coordinates[1] - current_tile.board_coordinates[1])
                 ** 2
             ) ** 0.5
-
+            
             if check_tile.letter in ("TW", "DW"):
                 # expected multiplication is multiplied by a factor depending on TW or DW which has the distance reductor to the power of the distance as its exponent
                 # the greater the distance is, the closer distance_reductor ** distance becomes to 0, so the closer the factor comes to 1.
                 expected_multiplication *= Globals.BOARDPOSITION_FACTORS[check_tile.letter] ** (Globals.BOARDPOSITION_FACTOR_DISTANCE_REDUCTOR ** distance_movetile_to_checktile)
-        return expected_multiplication
-    def update_boardposition_score(self, attempt_object: BotMoveObject) -> None:
+        return expected_multiplication"""
+    def update_boardposition_score(
+            self,
+            move_coordinates: list[tuple[int,int]],
+            move_direction: tuple[int,int],
+            move_letters: list[str],
+            move_words: list[str]
+        ) -> float:
         # the degradation factor which will be applied to get the final score of the move
         degradation_value: float = 0  
         # the danger factors created by different tiles: if multiple tiles create similar danger factors, they start to count less
         combinations_created: dict[int, float] = {}
         # the amount of decimals used for comparing danger factors
-        _rounding_value: int = 4
-        for tile in attempt_object.move_coordinates:
-            expected_multiplication: float = self.get_expected_multiplication(self._board.game_board[str(tile[0])][str(tile[1])]["tile_object"], attempt_object)
-            current_tile_attempt_letter: str = attempt_object.move_attempted_letters[
-                attempt_object.move_coordinates.index(self._board.game_board[str(tile[0])][str(tile[1])]["tile_object"].board_coordinates)
+        for tile in move_coordinates:
+            expected_multiplication: float = get_expected_multiplication(tile, (move_direction[1], move_direction[0]), self._board.game_board)
+            current_tile_attempt_letter: str = move_letters[
+                move_coordinates.index(self._board.game_board[str(tile[0])][str(tile[1])]["tile_object"].board_coordinates)
             ]
             # if the letter of the current move tile is a vowel, the danger is greater than if it is a consonant
-            vowel_factor: float = Globals.BOARDPOSITION_FACTORS[
-                (
-                    "Vowel"
-                    if current_tile_attempt_letter in ("A", "E", "I", "O", "U")
-                    else "Consonant"
-                )
-            ]
-            degradation_value += expected_multiplication * vowel_factor
-            """amount_of_similar_situations: int = [
-                round(value, _rounding_value)
-                for value in list(combinations_created.values())
-            ].count(round(expected_multiplication, _rounding_value))"""
-            combinations_created[attempt_object.move_coordinates.index(tile)] = expected_multiplication
+            
+            worth_letter = self._tilebag._tile_bag_dict[current_tile_attempt_letter]['value']
+            
+            
+            degradation_value += expected_multiplication * (1.5 * math.e ** (-0.178337 * (worth_letter - 1)))
+            print(current_tile_attempt_letter, expected_multiplication * (1.5 * math.e ** (-0.178337 * (worth_letter - 1))))
+            combinations_created[move_coordinates.index(tile)] = expected_multiplication
 
-        
+        print('gevaar woord zelf:', degradation_value)    
         addition_danger: float = 0
-        additions: list[str] = ["E", "N", "D", "S", "T", "R"]
-        gelegde_woord = attempt_object.move_attempted_words[0]
-        if gelegde_woord in self._achtervoegsels:
-            additions = list(self._achtervoegsels.get(gelegde_woord))
-            
-            tilerow_opp = (Globals.players_tilerows[1]
-                if self._player_id == 1
-                else Globals.players_tilerows[2]
-            )
-            aantal_in_bag = 0
+        if len(move_words) > 1:
+            main_word: str = move_words[1] #was move_words[1]
+        else:
+            main_word: str = move_words[0]
+        
+        found_suffixes: Literal[-1] | str = self._achtervoegsels.get(main_word, -1)
+        if found_suffixes != -1:
+            additions: list[str] = [char for char in found_suffixes]
+            tilerow_opponent: list[str] = Globals.players_tilerows[1 if self._player_id == 1 else 2]
+            amount_in_bag = 0
             for addition_letter in additions:
-                aantal_in_bag += self._tilebag.get_amount_of_letter(addition_letter) + self._tilerow.amount_of_letter_on_rack(tilerow_opp, addition_letter) - 3 * self.tilerow.amount_of_letter_on_rack(self._tilerow.tile_list, addition_letter)
-                
+                amount_in_bag += self._tilebag.get_amount_of_letter(addition_letter) + self.tilerow.amount_of_letter_on_rack(tilerow_opponent, addition_letter)
+            addition_danger += Globals.BOARDPOSITION_FACTORS["Addition_Danger"] * amount_in_bag
+            multiplication_danger_on_next_tile: float = get_expected_multiplication(
+                (move_coordinates[-1][0] + move_direction[0], move_coordinates[-1][1] + move_direction[1]),
+                (move_direction[1], move_direction[0]),
+                self._board.game_board
+            )
+            addition_danger += multiplication_danger_on_next_tile * Globals.BOARDPOSITION_FACTORS["Addition_Danger"] * amount_in_bag
+            print('achtervoegsels', multiplication_danger_on_next_tile * Globals.BOARDPOSITION_FACTORS["Addition_Danger"] * amount_in_bag)
+        found_prefixes: Literal[-1] | str = self._voorvoegsels.get(main_word, -1)
+        if found_prefixes != -1:
+            additions = [char for char in found_prefixes]
            
-            addition_danger += Globals.BOARDPOSITION_FACTORS["Addition_Danger"] * aantal_in_bag
-            multiplication_danger_on_next_tile: float = self.get_expected_multiplication(
-            self._board.game_board[str(attempt_object.move_coordinates[-1][0] + attempt_object.move_direction[0])][str(attempt_object.move_coordinates[-1][1] + attempt_object.move_direction[1])]["tile_object"], attempt_object)
-            addition_danger += multiplication_danger_on_next_tile * 0.5
-
-            
-
-        if gelegde_woord in self._voorvoegsels:
-            additions = list(self._voorvoegsels.get(gelegde_woord))
-            
             tilerow_opp = (Globals.players_tilerows[1]
                 if self._player_id == 1
                 else Globals.players_tilerows[2]
             )
-            aantal_in_bag = 0
+            amount_on_own_rack = 0
+            amount_in_bag = 0
             for addition_letter in additions:
-                aantal_in_bag += self._tilebag.get_amount_of_letter(addition_letter) + self._tilerow.amount_of_letter_on_rack(tilerow_opp, addition_letter) - 3 * self.tilerow.amount_of_letter_on_rack(self._tilerow.tile_list, addition_letter)
-                
-            
-            addition_danger += Globals.BOARDPOSITION_FACTORS["Addition_Danger"] * aantal_in_bag
-            
-            if attempt_object.move_coordinates[0][0] - attempt_object.move_direction[0] >= 0 and attempt_object.move_coordinates[0][1] - attempt_object.move_direction[1] >= 0:
-                multiplication_danger_on_next_tile: float = self.get_expected_multiplication(
-                self._board.game_board[str(attempt_object.move_coordinates[0][0] - attempt_object.move_direction[0])][str(attempt_object.move_coordinates[0][1] - attempt_object.move_direction[1])]["tile_object"], attempt_object)
+                amount_on_own_rack += self.tilerow.amount_of_letter_on_rack(self.tilerow.tile_list, addition_letter)
+                amount_in_bag += self._tilebag.get_amount_of_letter(addition_letter) + self.tilerow.amount_of_letter_on_rack(tilerow_opp, addition_letter)
+            if amount_in_bag != 0:
+                amount_in_bag -= 3/amount_in_bag*amount_on_own_rack
+            else:
+                amount_in_bag -= 3 * amount_on_own_rack
+            if self._tilebag.get_amount_of_letters_remaining() > 0:
+                amount_in_bag *= 1/(self._tilebag.get_amount_of_letters_remaining() + 7)
 
-                addition_danger += multiplication_danger_on_next_tile * 0.5
+            if move_coordinates[0][0] - move_direction[0] >= 0 and move_coordinates[0][1] - move_direction[1] >= 0:
+                multiplication_danger_on_preceding_tile: float = get_expected_multiplication(
+                    (move_coordinates[0][0] - move_direction[0], move_coordinates[0][1] - move_direction[1]),
+                    (move_direction[1], move_direction[0]),
+                    self._board.game_board
+                )
+ 
+                addition_danger += multiplication_danger_on_preceding_tile * Globals.BOARDPOSITION_FACTORS["Addition_Danger"] * amount_in_bag
+                print('Voorvoegsels', multiplication_danger_on_preceding_tile * Globals.BOARDPOSITION_FACTORS["Addition_Danger"] * amount_in_bag)
         degradation_value += addition_danger
-
-
-
-        #langsleggevaar
-        langsleg_danger = 0
-
-        #eerste letter woord
-        gelegde_letter = attempt_object.move_attempted_words[0][0]
+        danger_word_played_alongside: float = 0
+ 
+        # the first letter of the main word
+        first_tile: tuple[int,int] = move_coordinates[0]
+        first_tile_set: tuple[int,int] = move_coordinates[0]
+        for _ in range(
+            first_tile_set[0] if move_direction == (1,0) else first_tile_set[1],
+            0,
+            -1
+        ):
+            if first_tile[0] - move_direction[0] < 0 or first_tile[1] - move_direction[1] < 0:
+                break
+            elif self._board.game_board[str(first_tile[0] - move_direction[0])][str(first_tile[1] - move_direction[1])]["tile_object"].letter in Globals.EMPTY_TILE:
+                break
+            elif self._board.game_board[str(first_tile[0] - move_direction[0])][str(first_tile[1] - move_direction[1])]["tile_object"].letter not in Globals.EMPTY_TILE:
+                first_tile = (first_tile[0] - move_direction[0], first_tile[1] - move_direction[1])
+           
+        first_letter = self._board.game_board[str(first_tile[0])][str(first_tile[1])]["tile_object"].letter
+        print(move_coordinates)
+        # calculate danger of adding a word below the main word touching the first tile in the same direction
+        danger_word_played_alongside += self.get_danger_word_played_alongside(
+            self._achtervoegsels,
+            first_letter,
+            move_direction,
+            (
+                first_tile[0] + 1 if move_direction == (0,1) else first_tile[0],
+                first_tile[1] if move_direction == (0, 1) else first_tile[1] + 1
+            )
+        )
+ 
+        # calculate the danger of adding a word above the main word touching the first tile in the same direction
+        danger_word_played_alongside += self.get_danger_word_played_alongside(
+            self._voorvoegsels,
+            first_letter,
+            move_direction,
+            (
+                first_tile[0] - 1 if move_direction == (0,1) else first_tile[0],
+                first_tile[1] if move_direction == (0,1) else first_tile[1] - 1
+            )
+        )
+ 
+        # determine the last letter of the main word
+        last_tile_set: tuple[int,int] = move_coordinates[-1]
+        last_tile: tuple[int,int] = last_tile_set
+        for _ in range(
+            last_tile_set[0] if move_direction == (1,0) else last_tile_set[1],
+            0,
+            1
+        ):
+            if last_tile[0] + move_direction[0] > 14 or last_tile[1] + move_direction[1] > 14:
+                break
+            elif self._board.game_board[str(last_tile[0] + move_direction[0])][str(last_tile[1] + move_direction[1])]["tile_object"].letter in Globals.EMPTY_TILE:
+                break
+            elif self._board.game_board[str(last_tile[0] + move_direction[0])][str(last_tile[1] + move_direction[1])]["tile_object"].letter not in Globals.EMPTY_TILE:
+                last_tile = (last_tile[0] + move_direction[0], last_tile[1] + move_direction[1])
+           
+        last_letter = self._board.game_board[str(last_tile[0])][str(last_tile[1])]["tile_object"].letter        
+       
+        # calculate the danger of adding a word below the main word touching the last tile in the same direction
+        danger_word_played_alongside += self.get_danger_word_played_alongside(
+            self._achtervoegsels,
+            last_letter,
+            move_direction,
+            (
+                last_tile[0] + 1 if move_direction == (0,1) else last_tile[0],
+                last_tile[1] if move_direction == (0,1) else last_tile[1] + 1
+            )
+        )
         
-        #achterplakcheck (blauwe lijn) 
-        if gelegde_letter in self._achtervoegsels:
-                additions = list(self._achtervoegsels.get(gelegde_letter))
-                
-                tilerow_opp = (Globals.players_tilerows[1]
-                    if self._player_id == 1
-                    else Globals.players_tilerows[2]
-                )
-                aantal_in_bag = 0
-                for addition_letter in additions:
-                    aantal_in_bag += self._tilebag.get_amount_of_letter(addition_letter) + self._tilerow.amount_of_letter_on_rack(tilerow_opp, addition_letter) - 3 * self.tilerow.amount_of_letter_on_rack(self._tilerow.tile_list, addition_letter)
-                    
-            
-                langsleg_danger += Globals.BOARDPOSITION_FACTORS["Langsleg_danger"] * aantal_in_bag
-                
-
-                #klopt nog niet
-                multiplication_danger_on_next_tile: float = self.get_expected_multiplication(
-                self._board.game_board[str(attempt_object.move_coordinates[-1][0] + attempt_object.move_direction[0])][str(attempt_object.move_coordinates[-1][1] + attempt_object.move_direction[1])]["tile_object"], attempt_object)
-                langsleg_danger += multiplication_danger_on_next_tile * 0.5
-
-        #voorplakcheck (gele lijn)
-        if gelegde_letter in self._voorvoegsels:
-                additions = list(self._voorvoegsels.get(gelegde_letter))
-                
-                tilerow_opp = (Globals.players_tilerows[1]
-                    if self._player_id == 1
-                    else Globals.players_tilerows[2]
-                )
-                aantal_in_bag = 0
-                for addition_letter in additions:
-                    aantal_in_bag += self._tilebag.get_amount_of_letter(addition_letter) + self._tilerow.amount_of_letter_on_rack(tilerow_opp, addition_letter) - 3 * self.tilerow.amount_of_letter_on_rack(self._tilerow.tile_list, addition_letter)
-                    
-            
-                langsleg_danger += Globals.BOARDPOSITION_FACTORS["Langsleg_danger"] * aantal_in_bag
-                
-
-                #klopt nog niet
-                multiplication_danger_on_next_tile: float = self.get_expected_multiplication(
-                self._board.game_board[str(attempt_object.move_coordinates[-1][0] + attempt_object.move_direction[0])][str(attempt_object.move_coordinates[-1][1] + attempt_object.move_direction[1])]["tile_object"], attempt_object)
-                langsleg_danger += multiplication_danger_on_next_tile * 0.5
-
-
-        #laatste letter woord
-        gelegde_letter = attempt_object.move_attempted_words[0][-1]
-
-        #achterplakcheck (groene lijn)
-        if gelegde_letter in self._achtervoegsels:
-                additions = list(self._achtervoegsels.get(gelegde_letter))
-                
-                tilerow_opp = (Globals.players_tilerows[1]
-                    if self._player_id == 1
-                    else Globals.players_tilerows[2]
-                )
-                aantal_in_bag = 0
-                for addition_letter in additions:
-                    aantal_in_bag += self._tilebag.get_amount_of_letter(addition_letter) + self._tilerow.amount_of_letter_on_rack(tilerow_opp, addition_letter) - 3 * self.tilerow.amount_of_letter_on_rack(self._tilerow.tile_list, addition_letter)
-                    
-            
-                langsleg_danger += Globals.BOARDPOSITION_FACTORS["Langsleg_danger"] * aantal_in_bag
-                
-
-                #klopt nog niet
-                multiplication_danger_on_next_tile: float = self.get_expected_multiplication(
-                self._board.game_board[str(attempt_object.move_coordinates[-1][0] + attempt_object.move_direction[0])][str(attempt_object.move_coordinates[-1][1] + attempt_object.move_direction[1])]["tile_object"], attempt_object)
-                langsleg_danger += multiplication_danger_on_next_tile * 0.5
+       
+        # calculate the danger of adding a word above the main word touching the last tile in the same direction
+        danger_word_played_alongside += self.get_danger_word_played_alongside(
+            self._voorvoegsels,
+            last_letter,
+            move_direction,
+            (
+                last_tile[0] - 1 if move_direction == (0,1) else last_tile[0],
+                last_tile[1] if move_direction == (0,1) else last_tile[1] - 1
+            )
+        )
+        print('danger alongside:', danger_word_played_alongside)
+        degradation_value += danger_word_played_alongside
+        print('totaal:', degradation_value)
+        return degradation_value
+    
+    def get_danger_word_played_alongside(self, fixdict: dict[str,str], letter: str, check_direction: tuple[int,int], tile_coordinates: tuple[int,int]) -> float:
+        danger_word_played_alongside: float = 0
+        found_fixes: Literal[-1] | str = DictBinSearch(fixdict, letter)
         
-        #voorplakcheck (rode lijn)
-        if gelegde_letter in self._voorvoegsels:
-                additions = list(self._voorvoegsels.get(gelegde_letter))
-                
-                tilerow_opp = (Globals.players_tilerows[1]
-                    if self._player_id == 1
-                    else Globals.players_tilerows[2]
-                )
-                aantal_in_bag = 0
-                for addition_letter in additions:
-                    aantal_in_bag += self._tilebag.get_amount_of_letter(addition_letter) + self._tilerow.amount_of_letter_on_rack(tilerow_opp, addition_letter) - 3 * self.tilerow.amount_of_letter_on_rack(self._tilerow.tile_list, addition_letter)
-                    
+        if found_fixes != -1:
+            additions: list[str] = [char for char in found_fixes]
+ 
+            tilerow_opponent: list[str] = (
+                Globals.players_tilerows[1] if self._player_id == 1
+                else Globals.players_tilerows[2]
+            )
+            amount_on_own_rack = 0
+            amount_in_bag = 0
+            for addition_letter in additions:
+                amount_on_own_rack += self.tilerow.amount_of_letter_on_rack(self.tilerow.tile_list, addition_letter)
+                amount_in_bag += self._tilebag.get_amount_of_letter(addition_letter) + self.tilerow.amount_of_letter_on_rack(tilerow_opponent, addition_letter)
+            if amount_in_bag != 0:
+                amount_in_bag -= 3/amount_in_bag*amount_on_own_rack
+            else:
+                amount_in_bag -= 3 * amount_on_own_rack
+            if self._tilebag.get_amount_of_letters_remaining() > 0:
+                amount_in_bag *= 1/(self._tilebag.get_amount_of_letters_remaining() + 7)
             
-                langsleg_danger += Globals.BOARDPOSITION_FACTORS["Langsleg_danger"] * aantal_in_bag
-                
-
-                #klopt nog niet
-                multiplication_danger_on_next_tile: float = self.get_expected_multiplication(
-                self._board.game_board[str(attempt_object.move_coordinates[-1][0] + attempt_object.move_direction[0])][str(attempt_object.move_coordinates[-1][1] + attempt_object.move_direction[1])]["tile_object"], attempt_object)
-                langsleg_danger += multiplication_danger_on_next_tile * 0.5
-
-        degradation_value += langsleg_danger
-        attempt_object.position_degradation_score = degradation_value
-        
+            multiplication_danger_last_tile_above: float = get_expected_multiplication(
+                tile_coordinates,
+                check_direction,
+                self._board.game_board
+            )
+            
+            danger_word_played_alongside += multiplication_danger_last_tile_above * Globals.BOARDPOSITION_FACTORS["danger_word_played_alongside"] * amount_in_bag
+ 
+        return danger_word_played_alongside
     def skip_array(
         self, row_or_column: Literal["row", "column"], array_index: int
     ) -> bool:

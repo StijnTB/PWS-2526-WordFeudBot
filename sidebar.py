@@ -48,12 +48,21 @@ class BaseButton:
             if letter_height > self._highest_letter_height:
                 self._highest_letter_height = letter_height
         self._text_coordinates: tuple[int, int] = (
-            self._coordinates[0] - floor(self._text_width / 2),
-            self._coordinates[1] - floor(self._highest_letter_height / 2),
+            self._coordinates[0] - self.floor(self._text_width / 2),
+            self._coordinates[1] - self.floor(self._highest_letter_height / 2),
         )
         Globals.global_should_recompute = True
         self.update()
-
+    def ceil(self, number: float) -> int:
+        if round(number) - number > 0:
+            return round(number)
+        else:
+            return int(number - (round(number) - number))
+    def floor(self, number: float) -> int:
+        if round(number) > 0:
+            return int(number - (round(number) - number))
+        else:
+            return round(number)
     def update(self) -> None:
         if not self.hidden:
             self._background_rect: Rect = pygame.draw.rect(

@@ -1,6 +1,5 @@
 import pygame
 from pygame import Color
-from utils import *
 from typing import Literal
 
 pygame.init()
@@ -10,6 +9,7 @@ class Globals:
         148,
         TILE_SIZE,
     )  # the size of a button, width is standard due to text size
+    EMPTY_TILE: set[None | str] = {None, "DW","DL","TW","TL","","MI"}
     BORDER_BETWEEN_TILES_WIDTH: int = 2  # the amount of pixels between 2 tiles
     OFFSET_BETWEEN_SCREEN_CATEGORIES: int = (
         10  # the amount of pixels between different areas of the screen (the board, the buttons, the tilerow etc.)
@@ -18,26 +18,26 @@ class Globals:
         0  # every time the player or the bot passes, increase by 1. after 3, stop game
     )
     RANDOM_SEED: int = (
-        2  # the seed to use for every random generator to improve bugfixing
+        17 # the seed to use for every random generator to improve bugfixing
     )
     BINGO_BONUS_SCORE_MULTIPLIER: float = (
         0.5  # a multiplier for the bingo bonus score to vary its influence
     )
     BOARDPOSITION_FACTORS: dict[str, float] = (
         {  # a group of factors used for calculating the boardposition degradation factor
-            "TW": 30,
-            "TL": 0.05 * 2 / 3,
-            "DW": 20,
-            "DL": 0.05 * 1 / 3,
+            "TW": 22.5,
+            "TL": 2,
+            "DW": 15,
+            "DL": 1.3333,
             "Vowel": 2,
             "Consonant": 1,
             "Addition_Danger": 0.1,  # the value per available letter in bag - own letters
-            "Langsleg_danger": 0.05,
+            "danger_word_played_alongside": 1,
             "multiplication_danger_base": 0.1
         }
     )
     BOARDPOSITION_FACTOR_DISTANCE_REDUCTOR: float = (
-        0.9  # a factor used to define the reduction of influence a tile has in the degradation score
+        0.87  # a factor used to define the reduction of influence a tile has in the degradation score
     )
     SCREEN_WIDTH: int = (
         TILE_SIZE * 15
