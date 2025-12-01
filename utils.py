@@ -79,37 +79,34 @@ def get_expected_multiplication(current_tile: tuple[int,int], check_direction: t
         current_tile[1]
         - check_direction[1] * current_tile[1]
     )
-    starting_tile = (
-        starting_tile[0] if starting_tile[0] != -1 else 0,
-        starting_tile[1] if starting_tile[1] != -1 else 0
-    )
-    for check_tile in [
-        game_board[
-            str(starting_tile[0] + index * check_direction[0])
-        ][str(starting_tile[1] + index * check_direction[1])
-        ]["tile_object"]
-        for index in range(0,15)
-    ]:
-        
-        if check_tile.letter in ("TW", "DW"):
-            distance_movetile_to_checktile: int = (
-                (check_tile.board_coordinates[0] - current_tile[0]) ** 2
-                + (check_tile.board_coordinates[1] - current_tile[1]) ** 2
-            ) ** 0.5
-            expected_multiplication *= Globals.BOARDPOSITION_FACTORS[check_tile.letter] ** (Globals.BOARDPOSITION_FACTOR_DISTANCE_REDUCTOR ** distance_movetile_to_checktile)
-        if check_tile.letter in ("DL", "TL"):
-            distance_movetile_to_checktile: int = (
-                (check_tile.board_coordinates[0] - current_tile[0]) ** 2
-                + (check_tile.board_coordinates[1] - current_tile[1]) ** 2
-            ) ** 0.5
-            if distance_movetile_to_checktile == 1:
-                if game_board[str(current_tile[0])][str(current_tile[1])]["tile_object"].letter in ("A", "E", "O", "I", "U"):
-                    danger_xL += (3 * Globals.BOARDPOSITION_FACTORS[check_tile.letter]) ** (Globals.BOARDPOSITION_FACTOR_DISTANCE_REDUCTOR)
-                elif game_board[str(current_tile[0])][str(current_tile[1])]["tile_object"].letter in ("K", "S"):
-                    danger_xL += Globals.BOARDPOSITION_FACTORS[check_tile.letter] ** (Globals.BOARDPOSITION_FACTOR_DISTANCE_REDUCTOR)
-                elif game_board[str(current_tile[0])][str(current_tile[1])]["tile_object"].letter not in ("Q", "Y", "V", "C"):
-                    danger_xL += (0.25 * Globals.BOARDPOSITION_FACTORS[check_tile.letter]) ** (Globals.BOARDPOSITION_FACTOR_DISTANCE_REDUCTOR)
+    if starting_tile[0] >= 0 and starting_tile[0] < 15 and starting_tile[1] >= 0 and starting_tile[1] < 15:
+        for check_tile in [
+            game_board[
+                str(starting_tile[0] + index * check_direction[0])
+            ][str(starting_tile[1] + index * check_direction[1])
+            ]["tile_object"]
+            for index in range(0,15)
+        ]:
             
+            if check_tile.letter in ("TW", "DW"):
+                distance_movetile_to_checktile: int = (
+                    (check_tile.board_coordinates[0] - current_tile[0]) ** 2
+                    + (check_tile.board_coordinates[1] - current_tile[1]) ** 2
+                ) ** 0.5
+                expected_multiplication *= Globals.BOARDPOSITION_FACTORS[check_tile.letter] ** (Globals.BOARDPOSITION_FACTOR_DISTANCE_REDUCTOR ** distance_movetile_to_checktile)
+            if check_tile.letter in ("DL", "TL"):
+                distance_movetile_to_checktile: int = (
+                    (check_tile.board_coordinates[0] - current_tile[0]) ** 2
+                    + (check_tile.board_coordinates[1] - current_tile[1]) ** 2
+                ) ** 0.5
+                if distance_movetile_to_checktile == 1:
+                    if game_board[str(current_tile[0])][str(current_tile[1])]["tile_object"].letter in ("A", "E", "O", "I", "U"):
+                        danger_xL += (3 * Globals.BOARDPOSITION_FACTORS[check_tile.letter]) ** (Globals.BOARDPOSITION_FACTOR_DISTANCE_REDUCTOR)
+                    elif game_board[str(current_tile[0])][str(current_tile[1])]["tile_object"].letter in ("K", "S"):
+                        danger_xL += Globals.BOARDPOSITION_FACTORS[check_tile.letter] ** (Globals.BOARDPOSITION_FACTOR_DISTANCE_REDUCTOR)
+                    elif game_board[str(current_tile[0])][str(current_tile[1])]["tile_object"].letter not in ("Q", "Y", "V", "C"):
+                        danger_xL += (0.25 * Globals.BOARDPOSITION_FACTORS[check_tile.letter]) ** (Globals.BOARDPOSITION_FACTOR_DISTANCE_REDUCTOR)
+                
     expected_multiplication += danger_xL
     return expected_multiplication
  

@@ -19,7 +19,7 @@ class BotMoveObject:
         move_direction: tuple[int, int],
         attempt_score: int,
         bingo_bonus_score: float = 0,
-        position_degradation_score: float = 1,
+        position_degradation_score: float = 0,
     ):
         self._move_attempted_letters: list[str] = move_attempted_letters
         self._move_attempted_words: list[str] = move_attempted_words

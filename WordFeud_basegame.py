@@ -14,7 +14,7 @@ import json
 random.seed(Globals.RANDOM_SEED)
 word_trie: TRIE = TRIE()
 wordlist: list[str] = []
-bots_greedy_or_board_position: bool = True
+bots_greedy_or_board_position: bool = False
 seven_letter_words: list[str] = []
 word_dict: dict[int, dict[str, list[str]]] = {}
 with open("wordlist.txt", "r", encoding="utf-8") as wordlist_file:
@@ -65,8 +65,8 @@ screen.fill("Black")
 game_board = Board(Globals.BOARD_LAYOUT_LIST, word_trie)
 tilebag = TileBag()
 sidebar = SideBar()
-player = CompetitionBot(tilebag, game_board, sidebar, wordlist, 2, "bordpositie", word_dict, voorvoegsels, achtervoegsels)
-bot = CompetitionBot(tilebag, game_board, sidebar, wordlist, 1, "bordpositie", word_dict, voorvoegsels, achtervoegsels)
+player = CompetitionBot(tilebag, game_board, sidebar, wordlist, 2, "greedy", word_dict, voorvoegsels, achtervoegsels)
+bot = CompetitionBot(tilebag, game_board, sidebar, wordlist, 1, "combi", word_dict, voorvoegsels, achtervoegsels)
 
 Globals.global_should_recompute = True
 starting_turn: int = random.randint(
