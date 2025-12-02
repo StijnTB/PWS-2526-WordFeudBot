@@ -105,7 +105,7 @@ class Player:
                                                 clicked_board_tile.letter,
                                                 True,
                                                 clicked_tile_coordinates,
-                                                is_attempted_blank
+                                                is_attempted_blank,
                                             )
                                             self._game_board.reset_tile(
                                                 clicked_tile_coordinates

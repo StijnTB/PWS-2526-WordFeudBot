@@ -34,6 +34,9 @@ class TileBag:
     def get_amount_of_letters_remaining(self) -> int:
         return len(self._bag_list)
 
+    def get_amount_of_letter(self, letter: str):
+        return self._bag_list.count(letter)
+
     @property
     def bag_list(self) -> list[str]:
         return self._bag_list
@@ -41,3 +44,7 @@ class TileBag:
     @bag_list.setter
     def bag_list(self, new_bag_list: list[str]) -> None:
         self._bag_list = new_bag_list
+
+    @property
+    def tile_bag_dict(self) -> dict[str, dict[str, int]]:
+        return self._tile_bag_dict

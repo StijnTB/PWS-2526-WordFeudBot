@@ -1,10 +1,10 @@
 import pygame
 from pygame import Rect, Color
 from globals import Globals, screen
-from random import randint, seed
+from random import randint
 
 pygame.init()
-seed(Globals.RANDOM_SEED)
+
 
 class BaseTile:
     def __init__(
@@ -91,17 +91,19 @@ class BaseTile:
             self._x - self.floor(self._text_width / 2),
             self._y - self.floor(self._highest_letter_height / 2),
         )
-    
+
     def ceil(self, number: float) -> int:
         if round(number) - number > 0:
             return round(number)
         else:
             return int(number - (round(number) - number))
+
     def floor(self, number: float) -> int:
-        if round(number) - number > 0:
+        if round(number) > 0:
             return int(number - (round(number) - number))
         else:
             return round(number)
+
     def decide_tile_color(self) -> None:
         self._tile_color = Color(Globals.TILE_COLOR_DICT[self._tile_type])
 

@@ -37,7 +37,9 @@ class PlayerTileRow(TileRow):
         self._played_tile_list: list[RowTile] = (
             []
         )  # contains the rowtile data of tiles played in this turn
-        self._board_set_tile_list: list[tuple[int, int]] =  [] # contains the coordinates of tiles which are set in this turn
+        self._board_set_tile_list: list[tuple[int, int]] = (
+            []
+        )  # contains the coordinates of tiles which are set in this turn
         for index, tile_letter in enumerate(self._tile_list):
             self._tile_row_objects.append(RowTile(letter=tile_letter, row_coords=index))
         Globals.global_should_recompute = True
@@ -238,10 +240,12 @@ class BotTileRow(TileRow):
             print(
                 f"letters to replace {letters_to_replace}; tile list {old_tile_list}; changed tile list {self._tile_list}"
             )
-    
+
     def swap_letters(self, letters_to_return: list[str]) -> None:
         for letter in letters_to_return:
             self._tile_list.remove(letter)
         self._tile_list.extend(self._tilebag.swap_letters(letters_to_return))
         print(self._tile_list)
 
+    def amount_of_letter_on_rack(self, tilerow: list[str], letter: str) -> int:
+        return tilerow.count(letter)
