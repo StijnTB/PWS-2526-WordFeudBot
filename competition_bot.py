@@ -299,36 +299,20 @@ class CompetitionBot(Bot):
         Literal[False] | tuple[int, list[str], list[tuple[int, int]], list[str], float]
     ):
         if self.ends_out_of_bounds(tile, direction, word):
-            if word == "YO" and self._amount_of_turns >= 26:
-                print(
-                    f"word {word} {tile.board_coordinates} with direction {direction} ends out of bounds"
-                )
             return False
 
         opposite_direction: tuple[int, int] = (1, 0) if direction == (0, 1) else (0, 1)
 
         if self.touches_no_tiles(tile, direction, opposite_direction, word):
-            if word == "YO" and self._amount_of_turns >= 26:
-                print(
-                    f"word {word} {tile.board_coordinates} with direction {direction} touches no tiles"
-                )
             return False
 
         if self.word_has_letters_before_or_after(tile, direction, word):
-            if word == "YO" and self._amount_of_turns >= 26:
-                print(
-                    f"word {word} {tile.board_coordinates} with direction {direction} has letters before or after"
-                )
             return False
 
         rearrange_tiles_results: bool | tuple[list[tuple[int, int]], list[str]] = (
             self.rearranges_tiles(tile, direction, word, tiles_in_array)
         )
         if isinstance(rearrange_tiles_results, bool):
-            if word == "YO" and self._amount_of_turns >= 26:
-                print(
-                    f"word {word} {tile.board_coordinates} with direction {direction} rearranges tiles"
-                )
             return False
         word_attempt_tiles, word_attempt_letters = rearrange_tiles_results
 
@@ -341,17 +325,9 @@ class CompetitionBot(Bot):
             word_attempt_tiles,
         )
         if not points_results:
-            if word == "YO" and self._amount_of_turns >= 26:
-                print(
-                    f"word {word} {tile.board_coordinates} with direction {direction} has no points results"
-                )
             return False
         total_points, attempted_words, boardposition_score = points_results
         if total_points == 0:
-            if word == "YO" and self._amount_of_turns >= 26:
-                print(
-                    f"word {word} {tile.board_coordinates} with direction {direction} has 0 points"
-                )
             return False
         return (
             total_points,
@@ -364,10 +340,6 @@ class CompetitionBot(Bot):
     def ends_out_of_bounds(
         self, tile: BoardTile, direction: tuple[int, int], word: str
     ) -> bool:
-        if word == "YO" and self._amount_of_turns >= 26 and direction == (0, 1):
-            print(
-                f"YO at {tile.board_coordinates} horizontal ends at {tile.board_coordinates[1] + direction[1] * len(word)}"
-            )
         if (
             tile.board_coordinates[0] + direction[0] * (len(word) - 1) > 14
             or tile.board_coordinates[1] + direction[1] * (len(word) - 1) > 14
@@ -419,8 +391,6 @@ class CompetitionBot(Bot):
         word: str,
         tiles_in_array: str,
     ) -> bool | tuple[list[tuple[int, int]], list[str]]:
-        if len(word) <= 2 and self._amount_of_turns >= 26 and word == "YO":
-            print(f"word {word} direction {direction} at {tile.board_coordinates}")
         current_board_state: str = (
             ""  # the word currently formed by the entire row or column the word is placed in, with blank tiles represented as "_"
         )
@@ -458,15 +428,6 @@ class CompetitionBot(Bot):
             attempted_word_as_state += "_"
         letters_required_with_word_placement: list[str] = []
         for index in range(tiles_before_word, tiles_before_word + len(word)):
-            if word == "YO" and self._amount_of_turns >= 26:
-                print(
-                    f"YO at {tile.board_coordinates} with direction {direction} index {index} current {current_board_state[index]} attempt {attempted_word_as_state[index]}"
-                )
-                print(
-                    False
-                    if current_board_state[index] == "_"
-                    else (current_board_state[index] != attempted_word_as_state[index])
-                )
             if current_board_state[index] == "_":
                 if (
                     attempted_word_as_state[index] != "_"
@@ -510,10 +471,6 @@ class CompetitionBot(Bot):
                 if " " in letters_available:
                     letters_available.remove(" ")
                 else:
-                    if word == "YO" and self._amount_of_turns >= 26:
-                        print(
-                            f"YO at tile {tile.board_coordinates} direction {direction} has moved {letter} from outside to inside range"
-                        )
                     return True  # letters have been allocated from outside of the word range to inside, creating doubles
         return (word_attempt_tiles, word_attempt_letters)
 
