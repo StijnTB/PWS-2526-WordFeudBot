@@ -1,5 +1,5 @@
 from typing import TypedDict
-
+from globals import Globals
 class BotMovePropertiesDict(TypedDict):
     letters: list[str]
     words: list[str]
@@ -9,6 +9,7 @@ class BotMovePropertiesDict(TypedDict):
     bingo_bonus_score: float
     position_degradation_score: float
     total_score: float
+    danger_factors: list[float]
 
 class BotMoveObject:
     def __init__(
@@ -28,6 +29,7 @@ class BotMoveObject:
         self._score: int = attempt_score
         self._bingo_bonus_score: float = bingo_bonus_score
         self._position_degradation_score: float = position_degradation_score
+        self._danger_factors: list[float] = []
         self._properties: BotMovePropertiesDict = {
             "letters": self.move_attempted_letters,
             "words": self.move_attempted_words,
@@ -36,8 +38,10 @@ class BotMoveObject:
             "base_score": self.score,
             "bingo_bonus_score": self.bingo_bonus_score,
             "position_degradation_score": self.position_degradation_score,
-            "total_score": (self.score + self.get_bingo_score()) * self.get_deg_score()
+            "total_score": (self.score + self.get_bingo_score()) * self.get_deg_score(),
+            "danger_factors":self._danger_factors
         }
+    
     @property
     def move_attempted_letters(self) -> list[str]:
         return self._move_attempted_letters
@@ -75,6 +79,14 @@ class BotMoveObject:
         self._position_degradation_score = position_degradation_score
 
     @property
+    def danger_factors(self) -> list[float]:
+        return self._danger_factors
+
+    @danger_factors.setter
+    def danger_factors(self, new_danger_factors: list[float]) -> None:
+        self._danger_factors = new_danger_factors
+    
+    @property
     def properties(self) -> BotMovePropertiesDict:
         self.recalculate_properties()
         return self._properties
@@ -94,5 +106,6 @@ class BotMoveObject:
             "base_score": self.score,
             "bingo_bonus_score": self.bingo_bonus_score,
             "position_degradation_score": self.position_degradation_score,
-            "total_score": (self.score + self.get_bingo_score()) * self.get_deg_score()
+            "total_score": (self.score + self.get_bingo_score()) * self.get_deg_score(),
+            "danger_factors":[float(format(round(value, Globals.ROUND_DECIMALS), f".{Globals.ROUND_DECIMALS}f")) for value in self.danger_factors]
         }

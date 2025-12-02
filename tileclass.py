@@ -1,11 +1,10 @@
 import pygame
 from pygame import Rect, Color
 from globals import Globals, screen
-from utils import *
-from random import randint
+from random import randint, seed
 
 pygame.init()
-
+seed(Globals.RANDOM_SEED)
 
 class BaseTile:
     def __init__(
@@ -60,7 +59,7 @@ class BaseTile:
             "Played_tilerow_letter",
         ):
             self._letter_value_pygame_font = pygame.font.Font(
-                "GothamBlack.ttf", ceil(Globals.TEXT_SIZE_TILE / 2)
+                "GothamBlack.ttf", self.ceil(Globals.TEXT_SIZE_TILE / 2)
             )
             if not self._is_attempt_blank:
                 self._tile_value = Globals.TILE_LETTER_DICT[self._letter]["value"]
@@ -89,10 +88,20 @@ class BaseTile:
             if letter_height > self._highest_letter_height:
                 self._highest_letter_height = letter_height
         self._text_coordinates: tuple[int, int] = (
-            self._x - floor(self._text_width / 2),
-            self._y - floor(self._highest_letter_height / 2),
+            self._x - self.floor(self._text_width / 2),
+            self._y - self.floor(self._highest_letter_height / 2),
         )
-
+    
+    def ceil(self, number: float) -> int:
+        if round(number) - number > 0:
+            return round(number)
+        else:
+            return int(number - (round(number) - number))
+    def floor(self, number: float) -> int:
+        if round(number) - number > 0:
+            return int(number - (round(number) - number))
+        else:
+            return round(number)
     def decide_tile_color(self) -> None:
         self._tile_color = Color(Globals.TILE_COLOR_DICT[self._tile_type])
 

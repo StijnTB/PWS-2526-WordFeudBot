@@ -2,12 +2,14 @@ import pygame
 from tileclass import *
 from trieclass import TRIE
 from globals import Globals
+from utils import get_expected_multiplication
 from typing import TypedDict, Optional, Literal
-
+from botmove import BotMoveObject
+from time import sleep
 pygame.init()
 
 
-class game_board_cell(TypedDict):
+class GameBoardCell(TypedDict):
     type: Optional[str]
     letter: Optional[str]
     tile_object: BoardTile
@@ -23,11 +25,13 @@ class Board:
             list[Literal["TW", "TL", "DW", "DL", "MI"] | None]
         ] = original_board_layout
         self._word_tree: TRIE = word_tree
-        self._game_board: dict[str, dict[str, game_board_cell]] = {}
+        self._game_board: dict[str, dict[str, GameBoardCell]] = {}
         self.is_first_turn: bool = True
         self._used_rows: list[int] = [False for _ in range(0, 15)]
         self._used_columns: list[int] = [False for _ in range(0, 15)]
+        self._expected_multiplication_board: list[list[tuple[float,float]]] = []
         for row_index in range(0, len(self._original_board_layout)):
+            self._expected_multiplication_board.append([(0,0) for _ in range(0,15)])
             self._game_board[str(row_index)] = {}
             for column_index in range(0, 15):
                 original_tile: str | None = self._original_board_layout[row_index][
@@ -48,7 +52,12 @@ class Board:
                         board_coords=(row_index, column_index),
                     ),
                 }
-
+    def update(self) -> None:
+        for row in self._game_board:
+            for column in self._game_board[row]:
+                tile_object: BoardTile = self._game_board[row][column]["tile_object"]
+                tile_object.update()
+    
     @property
     def used_rows(self) -> list[int]:
         return self._used_rows
@@ -57,20 +66,22 @@ class Board:
     def used_columns(self) -> list[int]:
         return self._used_columns
 
-    def update(self) -> None:
-        for row in self._game_board:
-            for column in self._game_board[row]:
-                tile_object: BoardTile = self._game_board[row][column]["tile_object"]
-                tile_object.update()
-
     @property
-    def game_board(self) -> dict[str, dict[str, game_board_cell]]:
+    def game_board(self) -> dict[str, dict[str, GameBoardCell]]:
         return self._game_board
 
     @property
     def word_tree(self) -> TRIE:
         return self._word_tree
 
+    @property
+    def expected_multiplication_board(self) -> list[list[tuple[float,float]]]:
+        return self._expected_multiplication_board
+    
+    @expected_multiplication_board.setter
+    def expected_multiplication_board(self, new_board: list[list[tuple[float,float]]]) -> None:
+        self._expected_multiplication_board = new_board
+    
     def get_row_coordinate(self, vertical_coordinate: int) -> int:
         for index in range(0, 15):
             if index < 15:
@@ -128,7 +139,7 @@ class Board:
             "tile_object"
         ]
 
-    def reset_tile(self, clicked_tile_coordinates: tuple[int, int]):
+    def reset_tile(self, clicked_tile_coordinates: tuple[int, int]) -> None:
         clicked_tile_y: int = clicked_tile_coordinates[0]
         clicked_tile_x: int = clicked_tile_coordinates[1]
         original_type: str | None = Globals.BOARD_LAYOUT_LIST[clicked_tile_y][
@@ -148,7 +159,7 @@ class Board:
 
         # Globals.global_should_recompute = True
 
-    def reset_tiles(self, reset_coordinates_list: list[tuple[int, int]]):
+    def reset_tiles(self, reset_coordinates_list: list[tuple[int, int]]) -> None:
         for coordinate_set in reset_coordinates_list:
             self.reset_tile(coordinate_set)
 
@@ -282,7 +293,7 @@ class Board:
         word_value = word_value * (2**double_word_counter) * (3**triple_word_counter)
         return ("".join(word_formed_letters), word_value)
 
-    def finalize_set_tiles(self, tile_coordinates_list: list[tuple[int, int]]):
+    def finalize_set_tiles(self, tile_coordinates_list: list[tuple[int, int]]) -> None:
         tile_object: BoardTile
         coordinate_set: tuple[int, int]
         for coordinate_set in tile_coordinates_list:
@@ -320,7 +331,7 @@ class Board:
             print("multiple rows and columns is not allowed")
             return (False, 0)
         first_tile_in_main_coordinates: tuple[int, int] = (15, 15)
-        coordinate_selector: int = 1 if word_direction == (0, 1) else 0
+        coordinate_selector: int = word_direction[1]
         for tile in tile_coordinates_list:
             if (
                 tile[coordinate_selector]
@@ -358,33 +369,84 @@ class Board:
             print("extra 40 for 7 letters played")
             total_value += 40  # 7 tiles laid on board, so add 40 points
         self.finalize_set_tiles(tile_coordinates_list)
+        first_tile: tuple[int,int] = first_tile_in_main_coordinates
+        while True:
+            if self.game_board[str(first_tile[0] - word_direction[0])][str(first_tile[1] - word_direction[1])]["tile_object"].letter not in Globals.EMPTY_TILE:
+                first_tile = (first_tile[0] - word_direction[0], first_tile[1] - word_direction[1])
+            else:
+                break
+        self.recalculate_danger_factors((word_direction[1], word_direction[0]),0, first_tile)
         self.is_first_turn = False
         return (True, total_value)
 
     def bot_play_word(
         self,
-        tile_coordinates_list: list[tuple[int, int]],
-        letters_list: list[str],
+        move_object: BotMoveObject,
         blanks_list: list[tuple[int, int]],
-    ):
-        if len(tile_coordinates_list) == len(letters_list):
-            for index in range(len(tile_coordinates_list)):
-                if not self._used_rows[tile_coordinates_list[index][0]]:
-                    self._used_rows[tile_coordinates_list[index][0]] = True
-                if not self._used_columns[tile_coordinates_list[index][1]]:
-                    self._used_columns[tile_coordinates_list[index][1]] = True
-                tile_coordinate: tuple[int, int] = tile_coordinates_list[index]
-                tile_letter: str = letters_list[index]
-                self.game_board[str(tile_coordinate[0])][str(tile_coordinate[1])][
-                    "letter"
-                ] = tile_letter
-                tile_object: BoardTile = self.game_board[str(tile_coordinate[0])][
-                    str(tile_coordinate[1])
-                ]["tile_object"]
-                if tile_object.board_coordinates in blanks_list:
-                    tile_object.is_attempt_blank = True
-                tile_object.letter = tile_letter
-                tile_object.tile_type = "Set_board/Base_tilerow"
-                if tile_object.board_coordinates in blanks_list:
-                    tile_object.is_attempt_blank = True
-            self.is_first_turn = False
+        mode: Literal["greedy","kansberekening","bordpositie","combi"]
+    ) -> None:
+        for index in range(len(move_object.move_coordinates)):
+            if not self._used_rows[move_object.move_coordinates[index][0]]:
+                self._used_rows[move_object.move_coordinates[index][0]] = True
+            if not self._used_columns[move_object.move_coordinates[index][1]]:
+                self._used_columns[move_object.move_coordinates[index][1]] = True
+            
+            self.game_board[str(move_object.move_coordinates[index][0])][str(move_object.move_coordinates[index][1])]["letter"] = move_object.move_attempted_letters[index]
+            tile_object: BoardTile = self.game_board[str(move_object.move_coordinates[index][0])][str(move_object.move_coordinates[index][1])]["tile_object"]
+            if tile_object.board_coordinates in blanks_list:
+                tile_object.is_attempt_blank = True
+            tile_object.letter = move_object.move_attempted_letters[index]
+            tile_object.tile_type = "Set_board/Base_tilerow"
+        self.is_first_turn = False
+        first_tile: tuple[int,int] = move_object.move_coordinates[-1]
+        sleep(1)
+        while True:
+            if self.game_board[str(first_tile[0] - move_object.move_direction[0])][str(first_tile[1] - move_object.move_direction[1])]["tile_object"].letter not in Globals.EMPTY_TILE:
+                first_tile = (first_tile[0] - move_object.move_direction[0], first_tile[1] - move_object.move_direction[1])
+            else:
+                break
+        if mode in ("bordpositie","combi"):
+            self.recalculate_danger_factors((move_object.move_direction[1], move_object.move_direction[0]),len(move_object.move_attempted_words[1]), first_tile)
+    
+    def recalculate_expected_multiplications_in_array(self, check_direction: tuple[int,int], array_index: int) -> None: 
+        for variable_index in range(0, 15):
+            board_coordinates: tuple[int,int] = (
+                (variable_index if check_direction == (1,0) else array_index),
+                (array_index if check_direction == (1,0) else variable_index)
+            )
+            if self.game_board[str(board_coordinates[0])][str(board_coordinates[1])]["tile_object"].letter not in Globals.EMPTY_TILE:
+                print(f"board coordinate: {board_coordinates}, check direction {check_direction}", end = " ")
+                print(get_expected_multiplication(board_coordinates, check_direction, self.game_board), end = " ")
+                new_values: tuple[float,float] = (
+                    (get_expected_multiplication(board_coordinates, check_direction, self.game_board), self._expected_multiplication_board[board_coordinates[0]][board_coordinates[1]][1])
+                    if check_direction == (1,0)
+                    else (self._expected_multiplication_board[board_coordinates[0]][board_coordinates[1]][0], get_expected_multiplication(board_coordinates, check_direction, self.game_board))
+                )
+                print(new_values)
+                self._expected_multiplication_board[board_coordinates[0]][board_coordinates[1]] = new_values
+    
+    def recalculate_danger_factors(self, check_direction: tuple[int,int], word_length: int, word_first_tile: tuple[int,int]) -> None:
+        for index in range(word_length):
+            tile_coordinates = word_first_tile + index * (check_direction[1], check_direction[0])
+            if index == 0:
+                self.recalculate_expected_multiplications_in_array(
+                    (check_direction[1], check_direction[0]),
+                    (tile_coordinates[0] if check_direction == (1,0) else tile_coordinates[1])
+                )
+                print("calculate 1")
+            self.recalculate_expected_multiplications_in_array(
+                check_direction,
+                (tile_coordinates[0] if check_direction == (0,1) else tile_coordinates[1])
+            )
+            print("calculate 2")
+        average_danger_factor_main_word_direction: float = 0
+        for index in range(word_length):
+            tile_coordinates = word_first_tile + index * (check_direction[1], check_direction[0])
+            average_danger_factor_main_word_direction += self.expected_multiplication_board[tile_coordinates[0]][tile_coordinates[1]][(0 if check_direction == (1,0) else 1)]/word_length
+        for index in range(word_length):
+            tile_coordinates = word_first_tile + index * (check_direction[1], check_direction[0])
+            if check_direction == (0,1):
+                self.expected_multiplication_board[tile_coordinates[0]][tile_coordinates[1]] = (average_danger_factor_main_word_direction, self.expected_multiplication_board[tile_coordinates[0]][tile_coordinates[1]][1])
+            elif check_direction == (1,0):
+                self.expected_multiplication_board[tile_coordinates[0]][tile_coordinates[1]] = (self.expected_multiplication_board[tile_coordinates[0]][tile_coordinates[1]][0], average_danger_factor_main_word_direction)
+            

@@ -72,6 +72,13 @@ running = True
 while running:
     print(f"player tilerow: {player.tilerow.tile_list}")
     print(f"bot tilerow: {bot.tilerow.tile_list}")
+    for list_ in game_board.expected_multiplication_board:
+        print(
+            [(
+                format(round(list_item[0], int(Globals.ROUND_DECIMALS/2)), f".{int(Globals.ROUND_DECIMALS/2)}f"),
+                format(round(list_item[1], int(Globals.ROUND_DECIMALS/2)), f".{int(Globals.ROUND_DECIMALS/2)}f")
+            )for list_item in list_]
+        )
     Globals.players_tilerows[1] = player.tilerow.tile_list
     Globals.players_tilerows[2] = bot.tilerow.tile_list
     if turn == 0:
