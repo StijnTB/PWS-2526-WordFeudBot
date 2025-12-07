@@ -117,7 +117,7 @@ while running:
         sidebar.score_object.bot_score -= bot.tilerow.get_remaining_points()
         pygame.display.flip()
         break
-    if set(player.tilerow.tile_list) == {""}:
+    if set(player.tilerow.tile_list) == {""}  or player.tilerow.tile_list == []:
         sidebar.score_object.player_score += bot.tilerow.get_remaining_points()
         sidebar.score_object.bot_score -= bot.tilerow.get_remaining_points()
         pygame.display.flip()

@@ -189,8 +189,8 @@ class Scores:
         self._pygame_font: pygame.font.Font = pygame.font.Font(
             "GothamBlack.ttf", int(Globals.TEXT_SIZE_TILE * 3 / 4)
         )
-        self._player_image = self._pygame_font.render("PLAYER", True, "Black")
-        self._bot_image = self._pygame_font.render("BOT", True, "Black")
+        self._player_image = self._pygame_font.render("GREEDY", True, "Black")
+        self._bot_image = self._pygame_font.render("COMBI", True, "Black")
         self._player_image_coordinates: tuple[int, int] = (
             self._text_starting_x,
             int(Globals.BUTTON_SIZE[1] / 4),

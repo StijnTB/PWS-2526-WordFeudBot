@@ -18,7 +18,7 @@ class Globals:
         0  # every time the player or the bot passes, increase by 1. after 3, stop game
     )
     RANDOM_SEED: int = (
-        102 # the seed to use for every random generator to improve bugfixing
+        111 # the seed to use for every random generator to improve bugfixing
     )
     BINGO_BONUS_SCORE_MULTIPLIER: float = (
         0.5  # a multiplier for the bingo bonus score to vary its influence
