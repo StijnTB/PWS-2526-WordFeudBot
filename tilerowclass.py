@@ -1,9 +1,11 @@
-from tileclass import *
-from tilebagclass import TileBag
-from globals import *
-import random
+from random import seed, shuffle
 
-random.seed(Globals.RANDOM_SEED)
+from globals import Globals
+from tilebagclass import TileBag
+from tileclass import RowTile
+
+
+seed(Globals.RANDOM_SEED)
 
 
 class TileRow:
@@ -71,7 +73,7 @@ class PlayerTileRow(TileRow):
         for tile_object in self._played_tile_list:
             shuffleable_row_list.remove(tile_object.letter)
             unshufflable_index_list.append(tile_object.row_coordinate)
-        random.shuffle(shuffleable_row_list)
+        shuffle(shuffleable_row_list)
         current_index_shuffled_list: int = 0
         for index in range(len(self._tile_list)):
             if index not in unshufflable_index_list:

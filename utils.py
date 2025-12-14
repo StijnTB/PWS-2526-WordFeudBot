@@ -1,6 +1,7 @@
-import pygame
-from globals import Globals
+from pygame import font
 from typing import Literal, TypedDict, Optional
+
+from globals import Globals
 from tileclass import BoardTile
 
 
@@ -19,7 +20,7 @@ def ceil(number: float) -> int:
 
 
 def recalculate_letters(
-    pygame_font: pygame.font.Font, text: str, central_coordinates: tuple[int, int]
+    pygame_font: font.Font, text: str, central_coordinates: tuple[int, int]
 ) -> tuple[int, int]:
     highest_letter_height: int = 0
     text_width: int = 0
@@ -35,9 +36,7 @@ def recalculate_letters(
     return text_coordinates
 
 
-def calculate_text_dimensions(
-    pygame_font: pygame.font.Font, text: str
-) -> tuple[int, int]:
+def calculate_text_dimensions(pygame_font: font.Font, text: str) -> tuple[int, int]:
     highest_letter_height: int = 0
     text_width: int = 0
     for letter_used in text:

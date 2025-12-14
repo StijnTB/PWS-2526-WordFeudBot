@@ -1,17 +1,19 @@
-import pygame
-from tileclass import *
+from itertools import combinations
+from json import load
+from pygame import init, quit, event, display, QUIT
+from random import seed, randint
+
 from boardclass import Board
+from competition_bot import CompetitionBot
+from globals import Globals, screen
+from player import Player  # pyright: ignore[reportUnusedImport]
+from sidebar import SideBar
 from tilebagclass import TileBag
 from trieclass import TRIE
-from player import Player  # pyright: ignore[reportUnusedImport]
-from competition_bot import CompetitionBot
-from sidebar import SideBar
-from globals import Globals, screen
-import random
-from itertools import combinations
-import json
 
-random.seed(Globals.RANDOM_SEED)
+
+init()
+seed(Globals.RANDOM_SEED)
 word_trie: TRIE = TRIE()
 wordlist: list[str] = []
 bots_greedy_or_board_position: bool = False
@@ -27,9 +29,9 @@ with open("wordlist.txt", "r", encoding="utf-8") as wordlist_file:
         word_trie.insert(word)
 
 with open("achtervoegselwoorden.json", "r") as f:
-    achtervoegsels = json.load(f)
+    achtervoegsels = load(f)
 with open("voorvoegselwoorden.json", "r") as f:
-    voorvoegsels = json.load(f)
+    voorvoegsels = load(f)
 
 
 if not bots_greedy_or_board_position:
@@ -56,8 +58,6 @@ if not bots_greedy_or_board_position:
             else:
                 word_dict[5][kept].append(word)
 
-
-pygame.init()
 
 screen.fill("Black")
 
@@ -88,7 +88,7 @@ bot = CompetitionBot(
 )
 
 Globals.global_should_recompute = True
-starting_turn: int = random.randint(
+starting_turn: int = randint(
     0, 1
 )  # if starting_turn = 0, player starts, elif starting_turn = 1, bot starts
 starting_turn = 0
@@ -97,8 +97,8 @@ turn = starting_turn
 amount_of_turns: int = 0
 running = True
 while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    for _event in event.get():
+        if _event.type == QUIT:
             running = False
     print(f"player tilerow: {player.tilerow.tile_list}")
     print(f"bot tilerow: {bot.tilerow.tile_list}")
@@ -115,17 +115,17 @@ while running:
     if Globals.amount_of_passes >= 3:
         sidebar.score_object.player_score -= player.tilerow.get_remaining_points()
         sidebar.score_object.bot_score -= bot.tilerow.get_remaining_points()
-        pygame.display.flip()
+        display.flip()
         break
     if set(player.tilerow.tile_list) == {""}:
         sidebar.score_object.player_score += bot.tilerow.get_remaining_points()
         sidebar.score_object.bot_score -= bot.tilerow.get_remaining_points()
-        pygame.display.flip()
+        display.flip()
         break
     elif set(bot.tilerow.tile_list) == {""} or bot.tilerow.tile_list == []:
         sidebar.score_object.bot_score += player.tilerow.get_remaining_points()
         sidebar.score_object.player_score -= player.tilerow.get_remaining_points()
-        pygame.display.flip()
+        display.flip()
         break
 
-pygame.quit()
+quit()

@@ -1,9 +1,10 @@
-import pygame
-from pygame import Rect, Color
-from globals import Globals, screen
-from random import randint
+from pygame import Rect, Color, draw, display, font, surface
+from random import randint, seed
 
-pygame.init()
+from globals import Globals, screen
+
+
+seed(Globals.RANDOM_SEED)
 
 
 class BaseTile:
@@ -28,8 +29,8 @@ class BaseTile:
             self._tile_size,
             self._tile_size,
         )
-        self._background_rect: Rect = pygame.draw.rect(
-            pygame.display.get_surface(),
+        self._background_rect: Rect = draw.rect(
+            display.get_surface(),
             self._tile_color,
             self._base_tile_shape,
             0,
@@ -41,8 +42,8 @@ class BaseTile:
 
     def update(self) -> None:
         self.decide_tile_color()
-        self._background_rect = pygame.draw.rect(
-            pygame.display.get_surface(),
+        self._background_rect = draw.rect(
+            display.get_surface(),
             self._tile_color,
             self._base_tile_shape,
             0,
@@ -50,7 +51,7 @@ class BaseTile:
         )
         self.recalculate_letters()
         screen.blit(self._letter_image, self._text_coordinates)
-        self._pygame_font = pygame.font.Font("GothamBlack.ttf", Globals.TEXT_SIZE_TILE)
+        self._pygame_font = font.Font("GothamBlack.ttf", Globals.TEXT_SIZE_TILE)
         self._letter_image = self._pygame_font.render(self.letter, True, "Black")
         screen.blit(self._letter_image, self._text_coordinates)
         if self.tile_type in (
@@ -58,7 +59,7 @@ class BaseTile:
             "Set_board/Base_tilerow",
             "Played_tilerow_letter",
         ):
-            self._letter_value_pygame_font = pygame.font.Font(
+            self._letter_value_pygame_font = font.Font(
                 "GothamBlack.ttf", self.ceil(Globals.TEXT_SIZE_TILE / 2)
             )
             if not self._is_attempt_blank:
@@ -74,10 +75,10 @@ class BaseTile:
             screen.blit(self._tile_value_image, (self._x + 7, self._y + 7))
 
     def recalculate_letters(self):
-        self._pygame_font: pygame.font.Font = pygame.font.Font(
+        self._pygame_font: font.Font = font.Font(
             "GothamBlack.ttf", Globals.TEXT_SIZE_TILE
         )
-        self._letter_image: pygame.surface.Surface = self._pygame_font.render(
+        self._letter_image: surface.Surface = self._pygame_font.render(
             self._letter, True, "Black"
         )
         self._highest_letter_height: int = 0

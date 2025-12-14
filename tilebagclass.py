@@ -1,7 +1,8 @@
-import random
-from globals import *
+from random import seed, shuffle
 
-random.seed(Globals.RANDOM_SEED)
+from globals import Globals
+
+seed(Globals.RANDOM_SEED)
 
 
 class TileBag:
@@ -17,7 +18,7 @@ class TileBag:
 
     def grab_letters(self, amount_of_letters: int) -> list[str]:
         grabbed_letter_list: list[str] = []
-        random.shuffle(self._bag_list)
+        shuffle(self._bag_list)
         while amount_of_letters > 0:
             letter_grabbed = self._bag_list[0]
             self._bag_list.pop(0)

@@ -1,11 +1,8 @@
-import pygame
-from globals import Globals, screen
-from utils import *
-from pygame import Rect
+from pygame import Rect, font, draw, display
 from typing import Literal
 
-pygame.init()
-
+from globals import Globals, screen
+from utils import calculate_text_dimensions
 
 class BaseButton:
     def __init__(
@@ -36,7 +33,7 @@ class BaseButton:
         )
         self._hidden: bool = hidden
         self._tile_indexes_selected_list: list[int] = []
-        self._pygame_font = pygame.font.Font(
+        self._pygame_font = font.Font(
             "GothamBlack.ttf", int(Globals.TEXT_SIZE_TILE * 3 / 4)
         )
         self._letter_image = self._pygame_font.render(self.text, True, "Black")
@@ -68,8 +65,8 @@ class BaseButton:
 
     def update(self) -> None:
         if not self.hidden:
-            self._background_rect: Rect = pygame.draw.rect(
-                pygame.display.get_surface(),
+            self._background_rect: Rect = draw.rect(
+                display.get_surface(),
                 (
                     Globals.TILE_COLOR_DICT["Set_board/Base_tilerow"]
                     if not self.highlighted
@@ -179,14 +176,14 @@ class Scores:
             Globals.BUTTON_SIZE[0],
             self.BACKGROUND_HEIGHT,
         )
-        self._background_rect: Rect = pygame.draw.rect(
-            pygame.display.get_surface(),  # surface
+        self._background_rect: Rect = draw.rect(
+            display.get_surface(),  # surface
             Globals.TILE_COLOR_DICT["Try_board/Selected_tilerow"],  # color
             self._base_tile_shape,  # base rect
             0,  # line width
             int(Globals.BUTTON_SIZE[1] / 4),  # corner radius
         )
-        self._pygame_font: pygame.font.Font = pygame.font.Font(
+        self._pygame_font: font.Font = font.Font(
             "GothamBlack.ttf", int(Globals.TEXT_SIZE_TILE * 3 / 4)
         )
         self._player_image = self._pygame_font.render("PLAYER", True, "Black")
@@ -207,8 +204,8 @@ class Scores:
 
     def update(self):
 
-        self._background_rect: Rect = pygame.draw.rect(
-            pygame.display.get_surface(),  # surface
+        self._background_rect: Rect = draw.rect(
+            display.get_surface(),  # surface
             Globals.TILE_COLOR_DICT["Try_board/Selected_tilerow"],  # color
             self._base_tile_shape,  # base rect
             0,  # line width

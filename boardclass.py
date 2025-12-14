@@ -1,10 +1,8 @@
-import pygame
-from tileclass import *
-from trieclass import TRIE
-from globals import Globals
-from typing import TypedDict, Optional, Literal
+from typing import Literal, Optional, TypedDict
 
-pygame.init()
+from globals import Globals
+from tileclass import BoardTile
+from trieclass import TRIE
 
 
 class game_board_cell(TypedDict):

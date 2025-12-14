@@ -1,15 +1,14 @@
-import pygame
-from pygame import Color
+from pygame import Color, display
 from typing import Literal
 
-pygame.init()
+
 class Globals:
     TILE_SIZE: int = 40  # tile size should be divisible by 2 and 10
     BUTTON_SIZE: tuple[int, int] = (
         148,
         TILE_SIZE,
     )  # the size of a button, width is standard due to text size
-    EMPTY_TILE: set[None | str] = {None, "DW","DL","TW","TL","","MI"}
+    EMPTY_TILE: set[None | str] = {None, "DW", "DL", "TW", "TL", "", "MI"}
     BORDER_BETWEEN_TILES_WIDTH: int = 2  # the amount of pixels between 2 tiles
     OFFSET_BETWEEN_SCREEN_CATEGORIES: int = (
         10  # the amount of pixels between different areas of the screen (the board, the buttons, the tilerow etc.)
@@ -18,7 +17,7 @@ class Globals:
         0  # every time the player or the bot passes, increase by 1. after 3, stop game
     )
     RANDOM_SEED: int = (
-        102 # the seed to use for every random generator to improve bugfixing
+        102  # the seed to use for every random generator to improve bugfixing
     )
     BINGO_BONUS_SCORE_MULTIPLIER: float = (
         0.5  # a multiplier for the bingo bonus score to vary its influence
@@ -33,7 +32,7 @@ class Globals:
             "Consonant": 1,
             "Addition_Danger": 0.1,  # the value per available letter in bag - own letters
             "danger_word_played_alongside": 1,
-            "multiplication_danger_base": 0.1
+            "multiplication_danger_base": 0.1,
         }
     )
     BOARDPOSITION_FACTOR_DISTANCE_REDUCTOR: float = (
@@ -68,21 +67,261 @@ class Globals:
     )
 
     BOARD_LAYOUT_LIST: list[list[Literal["TL", "TW", "DL", "DW", "MI", None]]] = [
-        ["TL",None,None,None,"TW",None,None,"DL",None,None,"TW",None,None,None,"TL",],
-        [None,"DL",None,None,None,"TL",None,None,None,"TL",None,None,None,"DL",None,],
-        [None,None,"DW",None,None,None,"DL",None,"DL",None,None,None,"DW",None,None,],
-        [None,None,None,"TL",None,None,None,"DW",None,None,None,"TL",None,None,None,],
-        ["TW",None,None,None,"DW",None,"DL",None,"DL",None,"DW",None,None,None,"TW",],
-        [None,"TL",None,None,None,"TL",None,None,None,"TL",None,None,None,"TL",None,],
-        [None,None,"DL",None,"DL",None,None,None,None,None,"DL",None,"DL",None,None,],
-        ["DL",None,None,"DW",None,None,None,"MI",None,None,None,"DW",None,None,"DL",],
-        [None,None,"DL",None,"DL",None,None,None,None,None,"DL",None,"DL",None,None,],
-        [None,"TL",None,None,None,"TL",None,None,None,"TL",None,None,None,"TL",None,],
-        ["TW",None,None,None,"DW",None,"DL",None,"DL",None,"DW",None,None,None,"TW",],
-        [None,None,None,"TL",None,None,None,"DW",None,None,None,"TL",None,None,None,],
-        [None,None,"DW",None,None,None,"DL",None,"DL",None,None,None,"DW",None,None,],
-        [None,"DL",None,None,None,"TL",None,None,None,"TL",None,None,None,"DL",None,],
-        ["TL",None,None,None,"TW",None,None,"DL",None,None,"TW",None,None,None,"TL",],
+        [
+            "TL",
+            None,
+            None,
+            None,
+            "TW",
+            None,
+            None,
+            "DL",
+            None,
+            None,
+            "TW",
+            None,
+            None,
+            None,
+            "TL",
+        ],
+        [
+            None,
+            "DL",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "DL",
+            None,
+        ],
+        [
+            None,
+            None,
+            "DW",
+            None,
+            None,
+            None,
+            "DL",
+            None,
+            "DL",
+            None,
+            None,
+            None,
+            "DW",
+            None,
+            None,
+        ],
+        [
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "DW",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+        ],
+        [
+            "TW",
+            None,
+            None,
+            None,
+            "DW",
+            None,
+            "DL",
+            None,
+            "DL",
+            None,
+            "DW",
+            None,
+            None,
+            None,
+            "TW",
+        ],
+        [
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+        ],
+        [
+            None,
+            None,
+            "DL",
+            None,
+            "DL",
+            None,
+            None,
+            None,
+            None,
+            None,
+            "DL",
+            None,
+            "DL",
+            None,
+            None,
+        ],
+        [
+            "DL",
+            None,
+            None,
+            "DW",
+            None,
+            None,
+            None,
+            "MI",
+            None,
+            None,
+            None,
+            "DW",
+            None,
+            None,
+            "DL",
+        ],
+        [
+            None,
+            None,
+            "DL",
+            None,
+            "DL",
+            None,
+            None,
+            None,
+            None,
+            None,
+            "DL",
+            None,
+            "DL",
+            None,
+            None,
+        ],
+        [
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+        ],
+        [
+            "TW",
+            None,
+            None,
+            None,
+            "DW",
+            None,
+            "DL",
+            None,
+            "DL",
+            None,
+            "DW",
+            None,
+            None,
+            None,
+            "TW",
+        ],
+        [
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "DW",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+        ],
+        [
+            None,
+            None,
+            "DW",
+            None,
+            None,
+            None,
+            "DL",
+            None,
+            "DL",
+            None,
+            None,
+            None,
+            "DW",
+            None,
+            None,
+        ],
+        [
+            None,
+            "DL",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "TL",
+            None,
+            None,
+            None,
+            "DL",
+            None,
+        ],
+        [
+            "TL",
+            None,
+            None,
+            None,
+            "TW",
+            None,
+            None,
+            "DL",
+            None,
+            None,
+            "TW",
+            None,
+            None,
+            None,
+            "TL",
+        ],
     ]
 
     TILE_LETTER_DICT: dict[str, dict[str, int]] = {
@@ -126,7 +365,6 @@ class Globals:
     players_tilerows: dict[int, list[str]] = {1: [], 2: []}
 
 
-    
-game_display = pygame.display
-screen = pygame.display.set_mode((Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT))
-pygame.display.set_caption("WordFeud")
+game_display = display
+screen = display.set_mode((Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT))
+display.set_caption("WordFeud")

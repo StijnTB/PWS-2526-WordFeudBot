@@ -1,10 +1,10 @@
-import pygame
-from utils import *
-from globals import *
+from pygame import mouse, event, display, quit, QUIT, MOUSEBUTTONDOWN
+
 from boardclass import Board
+from globals import Globals, screen
 from sidebar import SideBar, BaseButton
 from tilebagclass import TileBag
-from tileclass import *
+from tileclass import BoardTile
 from tilerowclass import PlayerTileRow
 
 
@@ -33,15 +33,15 @@ class Player:
             if self._exit:
                 break
             self.update()
-            mouse_coordinates = pygame.mouse.get_pos()
+            mouse_coordinates = mouse.get_pos()
             self._sidebar.recalculate_button_highlights(mouse_coordinates)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
+            for _event in event.get():
+                if _event.type == QUIT:
+                    quit()
                     self._exit = True
                     break
                 else:
-                    if event.type == pygame.MOUSEBUTTONDOWN:
+                    if _event.type == MOUSEBUTTONDOWN:
                         if self._turn_state == "Base":
                             if (
                                 Globals.ROW_TILES_SCREEN_HEIGHT - Globals.TILE_SIZE / 2
@@ -217,7 +217,7 @@ class Player:
                                 Globals.global_should_recompute = True
                                 self._turn_state = "Base"
 
-                    pygame.display.flip()  # Update display
+                    display.flip()  # Update display
 
     def update(self) -> None:
         if (

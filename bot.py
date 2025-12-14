@@ -1,7 +1,5 @@
-from globals import *
 from boardclass import Board
 from tilebagclass import TileBag
-from tileclass import *
 from tilerowclass import BotTileRow
 
 

@@ -1,21 +1,21 @@
-from typing import Literal
-import pygame
-from bot import Bot
-from globals import Globals
-from tilebagclass import TileBag
-from boardclass import Board
-from sidebar import SideBar
-from tileclass import BoardTile
-from botmove import BotMoveObject
-import time
-import random
-import math
 from itertools import combinations, product
-from utils import DictBinSearch, get_expected_multiplication
+from math import comb, e
+from pygame import display
+from random import choices, seed 
+from time import sleep
+from typing import Literal
 
-random.seed(Globals.RANDOM_SEED)
+from bot import Bot
+from boardclass import Board
+from botmove import BotMoveObject
+from globals import Globals
+from sidebar import SideBar
+from tilebagclass import TileBag
+from tileclass import BoardTile
+from utils import get_expected_multiplication
 
-pygame.init()
+seed(Globals.RANDOM_SEED)
+
 empty_tile: set[None | str] = {None, "DW", "DL", "TW", "TL", ""}
 
 
@@ -149,7 +149,7 @@ class CompetitionBot(Bot):
         return best_move_greedy
 
     def competition_bot_play(self) -> None:
-        pygame.display.flip()
+        display.flip()
         if self._board.is_first_turn:
             self._amount_of_turns = 1
         else:
@@ -181,6 +181,7 @@ class CompetitionBot(Bot):
                         f"move failed: more blanks used than possible with tilerow, failed on tile '{tile[0]}"
                     )
                     move_failed = True
+
         if not move_failed and (best_move.score > 0 or best_move.score < 0):
             self._board.bot_play_word(
                 best_move.move_coordinates,
@@ -199,8 +200,8 @@ class CompetitionBot(Bot):
         else:
             print("no move found, bot passes")
             Globals.amount_of_passes += 1
-        pygame.display.flip()
-        time.sleep(1)
+        display.flip()
+        sleep(1)
 
     def get_letters_in_array(
         self, row_or_column: Literal["row", "column"], array_index: int
@@ -267,25 +268,26 @@ class CompetitionBot(Bot):
                         0,
                         attempt[4],
                     )
-                    possible_moves_list.append(attempt_object)
-                    if self._modus in ("kansberekening", "combi"):
-                        self.update_bingo_bonus_score(attempt_object, bingo_dict)
-                    # if self._modus in ("bordpositie", "combi"):
-                    #    self.update_boardposition_score(attempt_object)
-                    if round(
-                        (
-                            attempt_object.score
-                            + attempt_object.bingo_bonus_score
-                            - attempt_object.position_degradation_score
-                        )
-                    ) > round(
-                        (
-                            best_move_greedy.score
-                            + best_move_greedy.bingo_bonus_score
-                            - best_move_greedy.position_degradation_score
-                        )
-                    ):
-                        best_move_greedy = attempt_object
+                    if attempt_object.move_coordinates != []:
+                        possible_moves_list.append(attempt_object)
+                        if self._modus in ("kansberekening", "combi"):
+                            self.update_bingo_bonus_score(attempt_object, bingo_dict)
+                        # if self._modus in ("bordpositie", "combi"):
+                        #    self.update_boardposition_score(attempt_object)
+                        if round(
+                            (
+                                attempt_object.score
+                                + attempt_object.bingo_bonus_score
+                                - attempt_object.position_degradation_score
+                            )
+                        ) > round(
+                            (
+                                best_move_greedy.score
+                                + best_move_greedy.bingo_bonus_score
+                                - best_move_greedy.position_degradation_score
+                            )
+                        ):
+                            best_move_greedy = attempt_object
 
         return (best_move_greedy, possible_moves_list)
 
@@ -340,17 +342,13 @@ class CompetitionBot(Bot):
     def ends_out_of_bounds(
         self, tile: BoardTile, direction: tuple[int, int], word: str
     ) -> bool:
-        if (
-            tile.board_coordinates[0] + direction[0] * (len(word) - 1) > 14
-            or tile.board_coordinates[1] + direction[1] * (len(word) - 1) > 14
-        ):
-            return True  # word goes out of field bounds
-
-        if direction == (0, 1):
-            if tile.board_coordinates[0] + len(word) - 1 > 14:
+        if direction == (0, 1):  # horizontal word
+            if (
+                tile.board_coordinates[1] + len(word) - 1 > 14
+            ):  # word ends out of bounds
                 return True
-        elif direction == (1, 0):
-            if tile.board_coordinates[1] + len(word) - 1 > 14:
+        if direction == (1, 0):  # vertical word
+            if tile.board_coordinates[0] + len(word) - 1 > 14:
                 return True
         return False
 
@@ -370,8 +368,8 @@ class CompetitionBot(Bot):
                 return True  # the attempted word has a letter before it
 
         if (
-            tile.board_coordinates[0] + direction[0] * (len(word) + 0) != 15
-            and tile.board_coordinates[1] + direction[1] * (len(word) + 0) != 15
+            tile.board_coordinates[0] + direction[0] * (len(word) + 0 - 1) != 15
+            and tile.board_coordinates[1] + direction[1] * (len(word) + 0 - 1) != 15
         ):
             if (
                 self._board.game_board[
@@ -689,7 +687,7 @@ class CompetitionBot(Bot):
             amount_of_bingo: int = 0
             for _ in range(samples_per_combination):
                 new_tilerow: list[str] = tilerow.copy()
-                new_letters: list[str] = random.choices(tilebag, k=k)
+                new_letters: list[str] = choices(tilebag, k=k)
                 for idx, p in enumerate(letters_to_replace):
                     new_tilerow[p] = new_letters[idx]
                 if self.valid_words(new_tilerow):
@@ -711,7 +709,7 @@ class CompetitionBot(Bot):
             if self._player_id == 2
             else len(Globals.players_tilerows[2])
         )
-        amount_of_options = math.comb(7, k) * (tilebag_size**k)
+        amount_of_options = comb(7, k) * (tilebag_size**k)
         tilebag_unseen = tilebag.copy()
         tilebag_unseen.extend(
             (
@@ -797,11 +795,10 @@ class CompetitionBot(Bot):
             ]
 
             degradation_value_list.append(
-                expected_multiplication
-                * (1.5 * math.e ** (-0.178337 * (worth_letter - 1)))
+                expected_multiplication * (1.5 * e ** (-0.178337 * (worth_letter - 1)))
             )
             degradation_value += expected_multiplication * (
-                1.5 * math.e ** (-0.178337 * (worth_letter - 1))
+                1.5 * e ** (-0.178337 * (worth_letter - 1))
             )
             # print(current_tile_attempt_letter, expected_multiplication * (1.5 * math.e ** (-0.178337 * (worth_letter - 1))))
             combinations_created[move_coordinates.index(tile)] = expected_multiplication
@@ -1064,7 +1061,7 @@ class CompetitionBot(Bot):
         tile_coordinates: tuple[int, int],
     ) -> float:
         danger_word_played_alongside: float = 0
-        found_fixes: Literal[-1] | str = DictBinSearch(fixdict, letter)
+        found_fixes: Literal[-1] | str = fixdict.get(letter, -1)
 
         if found_fixes != -1:
             additions: list[str] = [char for char in found_fixes]
