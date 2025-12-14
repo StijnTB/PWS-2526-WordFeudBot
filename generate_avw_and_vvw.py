@@ -2,15 +2,15 @@ import json
 file = open('wordlist.txt', 'r', encoding='utf-8')
 
 
-woordenlijst = []
-dicta = dict()
+woordenlijst: list[str] = []
+dicta: dict[str,str] = dict()
 for line in file:
     woord = line.strip()
     woordenlijst.append(woord)
 
 x = 0
 
-dictv = dict()
+dictv: dict[str,str] = dict()
 for woord in woordenlijst:
     if len(woord) > x:
         x = len(woord)
