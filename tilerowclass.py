@@ -215,6 +215,7 @@ class BotTileRow(TileRow):
     def __init__(self, tilebag: TileBag):
         super().__init__(tilebag)
         self._max_grabbable_amount_from_tilebag: int = 7
+        #self._tile_list = ["Q", "Q", "Q", "Q", "Q", "X", "E"]
 
     def get_new_letters(self, letters_to_replace: list[str]) -> None:
         old_tile_list = self._tile_list.copy()

@@ -142,7 +142,7 @@ class CompetitionBot(Bot):
                     )
                 ):
                     best_move_greedy = best_move_vertical
-        if self._amount_of_turns >= 26:
+        if self._amount_of_turns >= 100:
             print(
                 "moves: ", [move.move_attempted_words for move in possible_moves_list]
             )
@@ -181,8 +181,7 @@ class CompetitionBot(Bot):
                         f"move failed: more blanks used than possible with tilerow, failed on tile '{tile[0]}"
                     )
                     move_failed = True
-
-        if not move_failed and (best_move.score > 0 or best_move.score < 0):
+        if not move_failed and (best_move.score > 0):
             self._board.bot_play_word(
                 best_move.move_coordinates,
                 best_move.move_attempted_letters,
@@ -194,7 +193,7 @@ class CompetitionBot(Bot):
             elif self._player_id == 2:
                 self._sidebar.score_object.player_score += best_move.score
             Globals.amount_of_passes = 0
-        elif best_move.score == 0 and best_move.bingo_bonus_score > 0:
+        elif move_failed and best_move.bingo_bonus_score > 0:
             self.tilerow.swap_letters(best_move.move_attempted_letters)
             print(f"swapped {best_move.move_attempted_letters}")
         else:
@@ -274,6 +273,8 @@ class CompetitionBot(Bot):
                             self.update_bingo_bonus_score(attempt_object, bingo_dict)
                         # if self._modus in ("bordpositie", "combi"):
                         #    self.update_boardposition_score(attempt_object)
+                        
+
                         if round(
                             (
                                 attempt_object.score
@@ -301,6 +302,7 @@ class CompetitionBot(Bot):
         Literal[False] | tuple[int, list[str], list[tuple[int, int]], list[str], float]
     ):
         if self.ends_out_of_bounds(tile, direction, word):
+            
             return False
 
         opposite_direction: tuple[int, int] = (1, 0) if direction == (0, 1) else (0, 1)
@@ -342,13 +344,14 @@ class CompetitionBot(Bot):
     def ends_out_of_bounds(
         self, tile: BoardTile, direction: tuple[int, int], word: str
     ) -> bool:
-        if direction == (0, 1):  # horizontal word
-            if (
-                tile.board_coordinates[1] + len(word) - 1 > 14
-            ):  # word ends out of bounds
+        if direction == (0,1):
+            
+            if tile.board_coordinates[1] + len(word) - 1 > 14:
                 return True
-        if direction == (1, 0):  # vertical word
+        if direction == (1,0):
+            
             if tile.board_coordinates[0] + len(word) - 1 > 14:
+                #tile.board_coordinates[1] is 10; len(word) is 5; 
                 return True
         return False
 
@@ -602,9 +605,10 @@ class CompetitionBot(Bot):
             total_points += 40  # add 40 for all tiles set
         boardposition_score: float = 0
         if self._modus in ("bordpositie", "combi"):
-            boardposition_score = self.update_boardposition_score(
-                word_attempt_tiles, direction, word_attempt_letters, attempted_words
-            )
+            if len(word_attempt_letters) > 0:
+                boardposition_score = self.update_boardposition_score(
+                    word_attempt_tiles, direction, word_attempt_letters, attempted_words
+                )
         self._board.reset_tiles(set_tiles_list)
 
         return (total_points, attempted_words, boardposition_score)
