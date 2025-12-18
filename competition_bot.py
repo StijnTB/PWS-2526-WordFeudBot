@@ -371,8 +371,8 @@ class CompetitionBot(Bot):
                 return True  # the attempted word has a letter before it
 
         if (
-            tile.board_coordinates[0] + direction[0] * (len(word) + 0 - 1) != 15
-            and tile.board_coordinates[1] + direction[1] * (len(word) + 0 - 1) != 15
+            tile.board_coordinates[0] + direction[0] * (len(word) + 0) != 15
+            and tile.board_coordinates[1] + direction[1] * (len(word) + 0) != 15
         ):
             if (
                 self._board.game_board[
